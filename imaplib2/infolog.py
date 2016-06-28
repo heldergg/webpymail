@@ -82,14 +82,14 @@ if __name__ == '__main__':
     a = InfoLog()
 
     def printAA( type, data ):
-        print 'Type: ', type
-        print 'Data: :', data
+        print('Type: ', type)
+        print('Data: :', data)
 
     a.addAction( 'AA', printAA )
     for i in range(20):
         a.addEntry( 'AA','AAAAA %d' % i )
 
-    print a
+    print(a)
 
     for i in a:
-        print i['data']
+        print(i['data'])

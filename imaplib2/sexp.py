@@ -115,17 +115,17 @@ if __name__ == '__main__':
     #text = 'A B (C NIL (D E))(F G)'
 
     itx = 300
-    rit = xrange(itx)
+    rit = range(itx)
 
-    print 'Test to the s-exp parser:'
-    print
+    print('Test to the s-exp parser:')
+    print()
 
-    print 'Non Recursive (%d times):' % itx
+    print('Non Recursive (%d times):' % itx)
     a = time()
     for i in rit:
         scan_sexp(text)
     b = time()
-    print 1000 * (b-a) / itx, 'ms/iter'
-    print itx, ' --> ', 1000 * (b-a) , 'ms'
-    print
-    print scan_sexp(text)
+    print(1000 * (b-a) / itx, 'ms/iter')
+    print(itx, ' --> ', 1000 * (b-a) , 'ms')
+    print()
+    print(scan_sexp(text))

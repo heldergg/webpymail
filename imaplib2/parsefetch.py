@@ -29,8 +29,8 @@
 '''
 
 # Imports
-from utils import getUnicodeHeader, getUnicodeMailAddr, internaldate2datetime, envelopedate2datetime
-from sexp import scan_sexp
+from .utils import getUnicodeHeader, getUnicodeMailAddr, internaldate2datetime, envelopedate2datetime
+from .sexp import scan_sexp
 
 # Body structure
 
@@ -193,7 +193,7 @@ class Single ( BodyPart ):
         self.part_number = '%s%d' % (prefix, level)
 
     def charset(self):
-        if self.body_fld_param.has_key('CHARSET'):
+        if 'CHARSET' in self.body_fld_param:
             return self.body_fld_param['CHARSET']
         else:
             return 'iso-8859-1'
@@ -201,7 +201,7 @@ class Single ( BodyPart ):
     def filename(self):
         # TODO: first look for the name on the Content-Disposition header
         # and only after this one should look on the Constant-Type Name parameter
-        if self.body_fld_param.has_key('NAME'):
+        if 'NAME' in self.body_fld_param:
             return getUnicodeHeader(self.body_fld_param['NAME'])
         else:
             return None
@@ -392,7 +392,7 @@ class FetchParser( dict ):
     def __init__(self, result):
         # Scan the message and make it a dict
         it = iter(scan_sexp(result)[0])
-        result = dict(zip(it,it))
+        result = dict(list(zip(it,it)))
 
         dict.__init__(self, result )
 
@@ -422,7 +422,7 @@ if __name__ == '__main__':
 
     try:
         optlist, args = getopt.getopt(sys.argv[1:], 'd:s:')
-    except getopt.error, val:
+    except getopt.error as val:
         optlist, args = (), ()
 
     if not args: args = ('',)
@@ -445,17 +445,17 @@ if __name__ == '__main__':
     M.logout()
 
     for uid in msg_list:
-        print '\n'*2
-        print 'UID:', uid
+        print('\n'*2)
+        print('UID:', uid)
         pprint.pprint(bodies[uid])
-        print
+        print()
         for part in walk(bodies[uid]['BODYSTRUCTURE']):
-            if part.has_key('part_number'):
-                print '%-10s %s/%s' % ( part['part_number'], part['media'],
-                    part['media_subtype'] )
+            if 'part_number' in part:
+                print('%-10s %s/%s' % ( part['part_number'], part['media'],
+                    part['media_subtype'] ))
             else:
-                print '%10s %s/%s' % (' ', part['media'],
-                    part['media_subtype'] )
+                print('%10s %s/%s' % (' ', part['media'],
+                    part['media_subtype'] ))
 
 
 ################################################################################
@@ -492,7 +492,7 @@ def body_parts( structure ):
                     multipart['media_subtype'] = part
             else:
                 # We have body_ext_mpart, for now we ignore this
-                if multipart.has_key('body_ext_mpart'):
+                if 'body_ext_mpart' in multipart:
                     multipart['body_ext_mpart'].append(part)
                 else:
                     multipart['body_ext_mpart'] = []
@@ -585,12 +585,12 @@ def walk( body ):
             yield body
 
 def represent_body( structure ):
-    print 'Recursive'
+    print('Recursive')
     body = calc_part_numbers( body_parts ( structure ) )
     for part in walk(body):
-        if part.has_key('part_number'):
-            print '%-10s %s/%s' % ( part['part_number'], part['media'],
-                part['media_subtype'] )
+        if 'part_number' in part:
+            print('%-10s %s/%s' % ( part['part_number'], part['media'],
+                part['media_subtype'] ))
         else:
-            print '%-10s %s/%s' % ( 'None', part['media'],
-                part['media_subtype'] )
+            print('%-10s %s/%s' % ( 'None', part['media'],
+                part['media_subtype'] ))

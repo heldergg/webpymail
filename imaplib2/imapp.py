@@ -39,13 +39,13 @@ import re
 import socket
 
 # Local imports
-from imapll import IMAP4, IMAP4_SSL
-from infolog import InfoLog
-from imapcommands import COMMANDS, STATUS
-from utils import makeTagged, unquote, shrink_fetch_list
-from parsefetch import FetchParser
-import parselist
-from sexp import scan_sexp
+from .imapll import IMAP4, IMAP4_SSL
+from .infolog import InfoLog
+from .imapcommands import COMMANDS, STATUS
+from .utils import makeTagged, unquote, shrink_fetch_list
+from .parsefetch import FetchParser
+from . import parselist
+from .sexp import scan_sexp
 
 # Constants
 D_NOTPARSED = 8
@@ -187,7 +187,7 @@ class IMAP4P:
     def __del__(self):
         if __debug__:
             if Debug & D_DEL:
-                print 'Deleting ImapServer instance.'
+                print('Deleting ImapServer instance.')
         if self.autologout and self.connected:
             self.logout()
             self.shutdown()
@@ -197,7 +197,7 @@ class IMAP4P:
     def expunged(self):
         '''Returns true if we have recently expunged messages
         '''
-        if self.sstatus['current_folder'].has_key('expunge_list'):
+        if 'expunge_list' in self.sstatus['current_folder']:
             if self.sstatus['current_folder']['expunge_list']:
                 return True
         return False
@@ -205,14 +205,14 @@ class IMAP4P:
     def is_expunged(self, ID ):
         '''Returns True if message id is expunged
         '''
-        if self.sstatus['current_folder'].has_key('expunge_list'):
+        if 'expunge_list' in self.sstatus['current_folder']:
             return ID in self.sstatus['current_folder']['expunge_list']
         return False
 
     def reset_expunged(self):
         '''Resets the currently expunged message list
         '''
-        if self.sstatus['current_folder'].has_key('expunge_list'):
+        if 'expunge_list' in self.sstatus['current_folder']:
             self.sstatus['current_folder']['expunge_list'] = []
 
     ##
@@ -285,7 +285,7 @@ class IMAP4P:
     def default_response(self, code, args):
         if __debug__:
             if Debug & D_NOTPARSED:
-                print 'Don\'t know how to handle:\n * %s %s' % (code, args)
+                print('Don\'t know how to handle:\n * %s %s' % (code, args))
 
     def parse_optional_codes(self, message):
         opt_respcode = opt_respcode_re.match(message)
@@ -296,8 +296,8 @@ class IMAP4P:
             if code not in STATUS:
                 if __debug__:
                     if Debug & D_NOTPARSED:
-                        print 'Don\'t know how to handle optional code:\n%s'% \
-                            message
+                        print('Don\'t know how to handle optional code:\n%s'% \
+                            message)
                 return # Silently ignore unknown OPTIONAL codes
 
             # Integer responses:
@@ -333,7 +333,7 @@ class IMAP4P:
         response = scan_sexp(args)
 
         it = iter(response[1:])
-        acl = dict(zip(it, it))
+        acl = dict(list(zip(it, it)))
 
         self.sstatus['acl_response'] = { 'mailbox': response[0],
                                         'acl': acl }
@@ -349,7 +349,7 @@ class IMAP4P:
         self.sstatus['current_folder']['EXISTS'] = int(args)
 
     def EXPUNGE_response(self, code, args):
-        if not self.sstatus['current_folder'].has_key('expunge_list'):
+        if 'expunge_list' not in self.sstatus['current_folder']:
             # Google's IMAP produces untagged EXPUNGE responses with the STORE
             # command (it should not it seems)
             # Gmail automatically expunges the messages when they are marked
@@ -373,7 +373,7 @@ class IMAP4P:
         # Parse the response:
         response = FetchParser(args[fresp.end():])
         response['ID'] = msg_num
-        if response.has_key('UID'):
+        if 'UID' in response:
             # If UIDPLUS capability, index mes by uid
             self.sstatus['fetch_response'][response['UID']] = response
         else:
@@ -448,7 +448,7 @@ class IMAP4P:
         response = scan_sexp(args)
         it = iter(response[1])
 
-        self.sstatus['status_response'] = dict(zip(it, it))
+        self.sstatus['status_response'] = dict(list(zip(it, it)))
         self.sstatus['status_response']['mailbox'] = response[0]
 
     ##
@@ -1200,7 +1200,7 @@ if __name__ == '__main__':
 
     try:
         optlist, args = getopt.getopt(sys.argv[1:], 'd:s:')
-    except getopt.error, val:
+    except getopt.error as val:
         optlist, args = (), ()
 
     Debug = D_NOTPARSED
@@ -1218,7 +1218,7 @@ if __name__ == '__main__':
     M.capability()
     M.logout()
 
-    print '\n\nStatus:'
+    print('\n\nStatus:')
 
     import pprint
     pprint.pprint(M.sstatus)

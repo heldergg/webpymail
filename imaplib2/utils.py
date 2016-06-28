@@ -61,10 +61,10 @@ def getUnicodeHeader( header ):
             codec = header[1]
 
         try:
-            text = unicode(header[0], codec).encode('utf-8')
+            text = str(header[0], codec).encode('utf-8')
         except:
             try:
-                text = unicode(header[0], 'iso-8859-1').encode('utf-8')
+                text = str(header[0], 'iso-8859-1').encode('utf-8')
             except:
                 raise
 

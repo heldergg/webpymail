@@ -38,8 +38,8 @@ standard python IMAP client module) by Piers Lauder.
 import socket, random, re
 
 # Local imports
-from imapcommands import COMMANDS
-from utils import Int2AP, makeTagged, ContinuationRequests
+from .imapcommands import COMMANDS
+from .utils import Int2AP, makeTagged, ContinuationRequests
 
 # Constants
 
@@ -177,7 +177,7 @@ class IMAP4:
         '''Read 'size' bytes from remote.'''
         if __debug__:
             if Debug & D_SERVER:
-                print 'S: Read %d bytes from the server.' % size
+                print(('S: Read %d bytes from the server.' % size))
         return self.file.read(size)
 
     def readline(self):
@@ -187,17 +187,17 @@ class IMAP4:
             raise self.Abort('socket error: EOF')
         if __debug__:
             if Debug & D_SERVER:
-                print 'S: %s' % line.replace(CRLF,'<cr><lf>')
+                print('S: %s' % line.replace(CRLF,'<cr><lf>'))
         return line
 
     def send(self, data):
         '''Send data to remote.'''
         if __debug__:
             if Debug & D_CLIENT:
-                print 'C: %s' % data.replace(CRLF,'<cr><lf>')
+                print('C: %s' % data.replace(CRLF,'<cr><lf>'))
         try:
             self.sock.sendall(data)
-        except (socket.error, OSError), val:
+        except (socket.error, OSError) as val:
             raise self.abort('socket error: %s' % val)
 
     def shutdown(self):
@@ -321,7 +321,7 @@ class IMAP4:
 
         if __debug__:
             if Debug & D_RESPONSE:
-                print response
+                print(response)
 
         return self.parse_command(tag, response)
 
@@ -452,7 +452,7 @@ class IMAP4_SSL(IMAP4):
         """Read 'size' bytes from remote."""
         if __debug__:
             if Debug & D_SERVER:
-                print 'S: Read %d bytes from the server.' % size
+                print('S: Read %d bytes from the server.' % size)
         # sslobj.read() sometimes returns < size bytes
         chunks = []
         read = 0
@@ -473,7 +473,7 @@ class IMAP4_SSL(IMAP4):
             if char == "\n" or len(char)==0:
                 if __debug__:
                     if Debug & D_SERVER:
-                        print 'S: %s' % ''.join(line).replace(CRLF,'<cr><lf>')
+                        print('S: %s' % ''.join(line).replace(CRLF,'<cr><lf>'))
                 return ''.join(line)
 
     def send(self, data):
@@ -481,7 +481,7 @@ class IMAP4_SSL(IMAP4):
         # NB: socket.ssl needs a "sendall" method to match socket objects.
         if __debug__:
             if Debug & D_CLIENT:
-                print 'C: %s' % data.replace(CRLF,'<cr><lf>')
+                print('C: %s' % data.replace(CRLF,'<cr><lf>'))
         bytes = len(data)
         while bytes > 0:
             sent = self.sslobj.write(data)
@@ -514,7 +514,7 @@ if __name__ == '__main__':
 
     try:
         optlist, args = getopt.getopt(sys.argv[1:], 'd:s:')
-    except getopt.error, val:
+    except getopt.error as val:
         optlist, args = (), ()
 
     Debug = D_SERVER | D_CLIENT | D_RESPONSE
