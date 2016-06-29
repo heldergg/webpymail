@@ -50,7 +50,7 @@ def server_login(host, port, ssl, user):
 ##
 
 def usage():
-    print '''Usage: %(script_name)s [command] [options]\n
+    print('''Usage: %(script_name)s [command] [options]\n
     Commands:
         --list-mailboxes [mailbox patern]
                                 List available mailboxes, accepts a regex as a
@@ -76,7 +76,7 @@ def usage():
     Notes:
         The mailbox patern is a regular expression. To match all the folders
         an empty string might be used.
-    ''' % { 'script_name': sys.argv[0] }
+    ''' % { 'script_name': sys.argv[0] })
 
 if __name__ == '__main__':
     try:
@@ -84,9 +84,9 @@ if __name__ == '__main__':
             ['list-mailboxes=', 'mark-read=',
             'host=', 'user=', 'security=', 'port=', 
             'help'])
-    except getopt.GetoptError, err:
-        print str(err)
-        print
+    except getopt.GetoptError as err:
+        print(str(err))
+        print()
         usage()
         sys.exit(1)
 
@@ -106,12 +106,12 @@ if __name__ == '__main__':
             try:
                 port = int(a)
             except ValueError:
-                print 'The port number must be an integer'
+                print('The port number must be an integer')
                 sys.exit(1)
         elif o in ('-s', '--security'):
             security = a.upper()
             if security not in ('TLS','SSL','NONE'):
-                print 'The security type must be TLS, or SSL or None.'
+                print('The security type must be TLS, or SSL or None.')
                 sys.exit(2)
             if security == 'SSL' and port == 143:
                 port = 993
@@ -125,30 +125,30 @@ if __name__ == '__main__':
                 regex = '.*'
             else:
                 regex = a
-            print
-            print 'The available folders are:'
-            print
+            print()
+            print('The available folders are:')
+            print()
             for folder in server.folder_tree.iter_match(regex):
-                print folder.path
+                print(folder.path)
             sys.exit()
 
         elif o == '--mark-read':
             ssl = security == 'SSL'            
             server = server_login(host, port, ssl, user)
-            print 'Going to mark messages read'
+            print('Going to mark messages read')
             if not a:
                 regex = '.*'
             else:
                 regex = a
             for folder in server.folder_tree.iter_match(regex):
-                print 'Marking folder: %s' % folder.path
+                print('Marking folder: %s' % folder.path)
                 folder.select()
                 message_list = folder.message_list
                 message_list.refresh_messages()
                 raw_message_list = [ uid for uid in 
                     message_list.flat_message_list ] 
                 folder.set_flags( raw_message_list , r'\Seen')
-            print 'Done.'
+            print('Done.')
 
             sys.exit()
 
