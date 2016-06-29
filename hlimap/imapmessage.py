@@ -188,7 +188,7 @@ class Paginator(object):
     def has_next_page(self):
         return self.current_page < self.max_page
 
-    def next(self):
+    def __next__(self):
         if self.has_next_page():
             return self.current_page + 1
         else:
@@ -470,7 +470,7 @@ class MessageList(object):
             message_list = list(self.flat_message_list)
             if message_list:
                 for msg_id,msg_info in  self._imap.fetch(message_list,
-                    '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE)').iteritems():
+                    '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE)').items():
                     self.message_dict[msg_id]['data'] = Message(
                         self.server, self.folder, msg_info )
 
@@ -493,7 +493,7 @@ class MessageList(object):
             if message_list:
                 for msg_id,msg_info in self._imap.fetch(message_list,
                             '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE)'
-                                                       ).iteritems():
+                                                       ).items():
                     self.message_dict[msg_id]['data'] = Message(
                         self.server, self.folder, msg_info )
 
@@ -575,14 +575,14 @@ class Message(object):
         if part.media.upper() == 'TEXT' and (decode_html or
             part.media_subtype.upper() != 'HTML') and decode_text:
             try:
-                return unicode(text, part.charset())
+                return str(text, part.charset())
             except (UnicodeDecodeError, LookupError):
                 # Some times the messages have the wrong encoding, for
                 # instance PHPMailer sends a text/plain with charset utf-8
                 # but the actual contents are iso-8859-1. Here we can try
                 # to guess the encoding on a case by case basis.
                 try:
-                    return unicode(text, 'iso-8859-1')
+                    return str(text, 'iso-8859-1')
                 except:
                     raise
 

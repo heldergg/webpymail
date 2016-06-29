@@ -24,7 +24,7 @@
 
 # Imports
 
-from imapserver import ImapServer
+from .imapserver import ImapServer
 
 # Shortcuts
 

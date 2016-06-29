@@ -23,7 +23,7 @@
 #
 
 import socket
-from imapfolder import FolderTree
+from .imapfolder import FolderTree
 from imaplib2.imapp import IMAP4P
 
 class NoFolderListError(Exception): pass

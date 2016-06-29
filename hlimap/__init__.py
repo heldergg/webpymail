@@ -22,7 +22,7 @@
 # Helder Guerreiro <helder@tretas.org>
 #
 
-from imapserver import ImapServer
+from .imapserver import ImapServer
 
 '''High Level IMAP Lib
 

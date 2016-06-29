@@ -21,7 +21,7 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-from imapmessage import MessageList
+from .imapmessage import MessageList
 from imaplib2.parselist import Mailbox
 import base64
 import re
@@ -75,7 +75,7 @@ class FolderTree(object):
 
     def add_folder( self, parts, subscribed, child = None, noselect = False ):
         path = self.dl.join( parts )
-        if not self.folder_dict.has_key(path):
+        if path not in self.folder_dict:
             self.folder_dict[ path ] = { 'data' : Folder(self.server, self, 
                                             parts, subscribed, noselect),
                                          'children': [] }
@@ -90,7 +90,7 @@ class FolderTree(object):
 
         if parent_parts:
             parent_path = self.dl.join( parent_parts )
-            if not self.folder_dict.has_key( parent_path ):
+            if parent_path not in self.folder_dict:
                 self.add_folder( parent_parts, False, child = path,
                     noselect = True )
             else:
@@ -100,11 +100,11 @@ class FolderTree(object):
     # Set folder properties
     def set_properties(self, expand_list,  special_folders):
         for folder_name in expand_list:
-            if self.folder_dict.has_key( folder_name ):
+            if folder_name in self.folder_dict:
                 self.folder_dict[folder_name]['data'].set_expand(True)
 
         for folder_name in special_folders:
-            if self.folder_dict.has_key( folder_name ):
+            if folder_name in self.folder_dict:
                 self.folder_dict[folder_name]['data'].special = True
 
     def sort(self, folder_list = None):
@@ -179,7 +179,7 @@ class FolderTree(object):
 
     # Folder operations
     def get_folder(self, path):
-        if not self.folder_dict.has_key(path):
+        if path not in self.folder_dict:
             try:
                 if LISTINBOX and (path.upper() == 'INBOX'):
                     mailbox = self._imap.list("", path)[0]
@@ -398,10 +398,10 @@ class Folder(object):
     def __unicode__(self):
         mailbox = self.name
         try:
-            return unicode(mailbox.replace('+','+-').replace('&','+'
+            return str(mailbox.replace('+','+-').replace('&','+'
                 ).replace(',','/'),'utf-7')
         except UnicodeDecodeError:
-            return unicode(mailbox.replace('+','+-').replace('&','+'
+            return str(mailbox.replace('+','+-').replace('&','+'
                 ).replace(',','/'),'utf-8')
 
     def __repr__(self):
