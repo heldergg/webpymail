@@ -19,7 +19,7 @@
 ## along with sabapp.  If not, see <http://www.gnu.org/licenses/>.
 
 #
-# Helder Guerreiro <helder@paxjulia.com>
+# Helder Guerreiro <helder@tretas.org>
 #
 # $Id$
 #
