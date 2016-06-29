@@ -42,12 +42,10 @@ def do_part_text(parser, token):
         # split_contents() knows not to split quoted strings.
         tag_name, message, part, media_subtype = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError, \
-            "%r tag requires three args: message, part, media_subtype" \
-            % token.contents.split()[0]
+        raise template.TemplateSyntaxError("%r tag requires three args: message, part, media_subtype" \
+            % token.contents.split()[0])
     if not (media_subtype[0] == media_subtype[-1] and media_subtype[0] in ('"', "'")):
-        raise template.TemplateSyntaxError, \
-            "%r tag's media_subtype argument should be in quotes" % tag_name
+        raise template.TemplateSyntaxError("%r tag's media_subtype argument should be in quotes" % tag_name)
 
     return PartTextNode(message, part, media_subtype[1:-1])
 

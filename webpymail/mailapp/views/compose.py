@@ -50,7 +50,7 @@ from django.utils.translation import ugettext as _
 
 # Local Imports
 from mailapp.models import Attachments
-from mail_utils import serverLogin, send_mail, join_address_list, mail_addr_str, mail_addr_name_str, quote_wrap_lines, show_addrs, compose_rfc822
+from .mail_utils import serverLogin, send_mail, join_address_list, mail_addr_str, mail_addr_name_str, quote_wrap_lines, show_addrs, compose_rfc822
 from utils.config import WebpymailConfig
 from themesapp.shortcuts import render_to_response
 
@@ -113,7 +113,7 @@ class UploadFiles:
         @param file_list: a list of Attachments table ids.
         '''
         obj_lst = Attachments.objects.filter(user__exact=self.user).in_bulk(file_list)
-        self.file_list += [ Xi for Xi in obj_lst.itervalues() ]
+        self.file_list += [ Xi for Xi in obj_lst.values() ]
 
     def add_new_files(self, file_list ):
         '''
@@ -147,7 +147,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
         other_action = False
 
         old_files = []
-        if new_data.has_key('saved_files'):
+        if 'saved_files' in new_data:
             if new_data['saved_files']:
                 old_files = new_data['saved_files'].split(',')
 
@@ -164,7 +164,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
                 other_action = True
 
         # Check if the cancel button was pressed
-        if  new_data.has_key('cancel'):
+        if  'cancel' in new_data:
             # Delete the files
             uploaded_files.delete()
             # return
@@ -180,7 +180,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
 
         form = ComposeMailForm(new_data, request = request)
 
-        if new_data.has_key('upload'):
+        if 'upload' in new_data:
             other_action = True
 
         if form.is_valid() and not other_action:
@@ -224,7 +224,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
                     passwd = request.session['password']
 
                 send_mail( message,  host, port, user, passwd, security)
-            except SMTPRecipientsRefused, detail:
+            except SMTPRecipientsRefused as detail:
                 error_message = ''.join(
                     ['<p>%s' % escape(detail.recipients[Xi][1])
                      for Xi in detail.recipients ] )
@@ -232,12 +232,12 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
                     'server_error': error_message,
                     'uploaded_files': uploaded_files},
                     context_instance=RequestContext(request))
-            except SMTPException, detail:
+            except SMTPException as detail:
                 return render_to_response('mail/send_message.html', {'form':form,
                     'server_error': '<p>%s' % detail,
                     'uploaded_files': uploaded_files},
                     context_instance=RequestContext(request))
-            except Exception, detail:
+            except Exception as detail:
                 error_message = '<p>%s' % detail
                 return render_to_response('mail/send_message.html', {'form':form,
                     'server_error': error_message,
@@ -303,7 +303,7 @@ def reply_message(request, folder, uid):
 
     # Extract the relevant headers
     to_addr = mail_addr_str(message.envelope['env_from'][0])
-    subject = _('Re: ') + unicode(message.envelope['env_subject'],'utf-8')
+    subject = _('Re: ') + str(message.envelope['env_subject'],'utf-8')
 
     # Extract the message text
     text = ''

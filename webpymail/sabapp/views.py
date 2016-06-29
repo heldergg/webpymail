@@ -22,7 +22,7 @@
 # Helder Guerreiro <helder@tretas.org>
 #
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
@@ -32,8 +32,8 @@ from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from django.views.decorators.http import require_POST
 
-from forms import AddressForm, ComposeToForm
-from models import Address
+from .forms import AddressForm, ComposeToForm
+from .models import Address
 from themesapp.shortcuts import render_to_response
 
 # Views:
@@ -65,7 +65,7 @@ def manage_address(request, address_id = None):
             raise Http404
 
     if request.method == 'POST':
-        if request.POST.has_key('cancel'):
+        if 'cancel' in request.POST:
             return redirect(next)
         if address_id:
             form = AddressForm(request.POST, instance = address)
@@ -117,7 +117,7 @@ def compose_to_addresses(request):
         bcc_addr   = form.cleaned_data['bcc_addr'].encode('utf-8')
 
         if to_addr or cc_addr or bcc_addr:
-            query = urllib.urlencode( { 'to_addr': to_addr,
+            query = urllib.parse.urlencode( { 'to_addr': to_addr,
                                         'cc_addr': cc_addr,
                                         'bcc_addr': bcc_addr,})
             return redirect( '%s?%s' % (reverse('mailapp_send_message'), query))

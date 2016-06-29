@@ -22,7 +22,7 @@
 # Helder Guerreiro <helder@tretas.org>
 #
 
-from shortcuts import get_theme
+from .shortcuts import get_theme
 
 def theme_name( request ):
     return { 'theme': get_theme(request) }

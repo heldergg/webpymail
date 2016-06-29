@@ -37,7 +37,7 @@ from django.template import RequestContext
 
 # Local
 from mailapp.models import FoldersToExpand
-from mail_utils import serverLogin
+from .mail_utils import serverLogin
 from themesapp.shortcuts import render_to_response
 from utils.config import WebpymailConfig
 

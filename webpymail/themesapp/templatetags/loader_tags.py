@@ -20,7 +20,7 @@ class BlockContext(object):
         self.blocks = {}
 
     def add_blocks(self, blocks):
-        for name, block in blocks.iteritems():
+        for name, block in blocks.items():
             if name in self.blocks:
                 self.blocks[name].insert(0, block)
             else:
@@ -168,7 +168,7 @@ class IncludeNode(Node):
             t = select_template( template_name, context )
 
             return t.render(context)
-        except TemplateSyntaxError, e:
+        except TemplateSyntaxError as e:
             if settings.TEMPLATE_DEBUG:
                 raise
             return ''

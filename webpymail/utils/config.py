@@ -26,7 +26,7 @@
 """
 
 # Imports
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import os.path
 import re
 

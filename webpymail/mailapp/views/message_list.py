@@ -36,10 +36,10 @@ from django.template import RequestContext
 
 # Local
 from mailapp.forms import MessageActionForm
-from mail_utils import serverLogin
+from .mail_utils import serverLogin
 from themesapp.shortcuts import render_to_response
 from utils.config import WebpymailConfig
-import msgactions
+from . import msgactions
 
 ##
 # Views

@@ -37,10 +37,10 @@ from django.template import RequestContext
 from django.utils.translation import gettext_lazy as _
 
 # Local
-from mail_utils import serverLogin
+from .mail_utils import serverLogin
 from themesapp.shortcuts import render_to_response
 from utils.config import WebpymailConfig
-import msgactions
+from . import msgactions
 
 import hlimap
 
@@ -108,7 +108,7 @@ def message_source( request, folder, uid ):
     # Assume that we have a single byte encoded string, this is because there
     # can be several different files with different encodings within the same
     # message.
-    source = unicode(message.source(),'ISO-8859-1')
+    source = str(message.source(),'ISO-8859-1')
 
     return render_to_response('mail/message_source.html',{'folder':folder,
         'message':message, 'source': source },

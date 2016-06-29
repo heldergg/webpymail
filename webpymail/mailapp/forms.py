@@ -35,7 +35,7 @@ from django.conf import settings
 import re
 
 from utils.config import WebpymailConfig
-from multifile import *
+from .multifile import *
 
 try:
     import markdown

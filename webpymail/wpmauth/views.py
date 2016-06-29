@@ -36,7 +36,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 
 # Local imports:
-from forms import LoginForm
+from .forms import LoginForm
 from utils.config import server_config, WebpymailConfig
 from themesapp.shortcuts import render_to_response
 

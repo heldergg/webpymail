@@ -50,14 +50,14 @@ UNDELETE = 4
 def message_change( request, message ):
     new_data = request.POST.copy()
 
-    if new_data.has_key('delete'):
+    if 'delete' in new_data:
         message.set_flags(DELETED)
-    elif new_data.has_key('undelete'):
+    elif 'undelete' in new_data:
         message.reset_flags(DELETED)
 
 def batch_change(request, folder, message_list):
     new_data = request.POST.copy()
-    if new_data.has_key('expunge'):
+    if 'expunge' in new_data:
         folder.expunge()
         return
 
@@ -88,10 +88,10 @@ def batch_change(request, folder, message_list):
     elif action == MARK_UNREAD:
         folder.reset_flags(selected_messages, SEEN)
 
-    if new_data.has_key('move') or new_data.has_key('copy'):
+    if 'move' in new_data or 'copy' in new_data:
         if folder.url() == form.cleaned_data['folder']:
             return
         target_folder =  base64.urlsafe_b64decode(str(form.cleaned_data['folder']))
         folder.copy(selected_messages, target_folder)
-        if new_data.has_key('move'):
+        if 'move' in new_data:
             folder.set_flags(selected_messages, DELETED)

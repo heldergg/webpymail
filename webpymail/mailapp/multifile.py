@@ -51,19 +51,19 @@ class MultiFileInput(FileInput):
         """
         Renders the necessary number of file input boxes.
         """
-        return u''.join([u'<input%s />\n' % flatatt(dict(attrs, id=attrs['id']+str(i))) for i in range(count)])
+        return ''.join(['<input%s />\n' % flatatt(dict(attrs, id=attrs['id']+str(i))) for i in range(count)])
 
     def link(self, name, value, count, attrs=None):
         """
         Renders a link to add more file input boxes.
         """
-        return u"<a onclick=\"javascript:new_%(name)s()\">+</a>" % {'name':name}
+        return "<a onclick=\"javascript:new_%(name)s()\">+</a>" % {'name':name}
 
     def js(self, name, value, count, attrs=None):
         """
         Renders a bit of Javascript to add more file input boxes.
         """
-        return u"""
+        return """
         <script type="text/javascript">
         <!--
         %(id)s_counter=%(count)d;
@@ -129,18 +129,18 @@ class MultiFileField(Field):
         if not self.required and data in EMPTY_VALUES:
             return None
         try:
-            f = map(lambda a: UploadedFile(a['filename'], a['content']), data)
+            f = [UploadedFile(a['filename'], a['content']) for a in data]
         except TypeError:
-            raise ValidationError(ugettext(u"No file was submitted. Check the encoding type on the form."))
+            raise ValidationError(ugettext("No file was submitted. Check the encoding type on the form."))
         except KeyError:
-            raise ValidationError(ugettext(u"No file was submitted."))
+            raise ValidationError(ugettext("No file was submitted."))
 
         for a_file in f:
             if not a_file.content:
-                raise ValidationError(ugettext(u"The submitted file is empty."))
+                raise ValidationError(ugettext("The submitted file is empty."))
 
         if self.strict and len(f) != self.count:
-            raise ValidationError(ugettext(u"An incorrect number of files were uploaded."))
+            raise ValidationError(ugettext("An incorrect number of files were uploaded."))
 
         return f
 
@@ -150,7 +150,7 @@ class FixedMultiFileInput(MultiFileInput):
     the user to add more file input boxes.
     """
     def link(self, name, value, count, attrs=None):
-        return u''
+        return ''
 
     def js(self, name, value, count, attrs=None):
-        return u''
+        return ''

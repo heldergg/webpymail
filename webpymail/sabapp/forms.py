@@ -24,7 +24,7 @@
 
 from django import forms
 
-from models import Address
+from .models import Address
 
 class AddressForm(forms.ModelForm):
     class Meta:
@@ -44,7 +44,7 @@ class ComposeToForm(forms.Form):
         self.fields['bcc_addr'].choices = choices
 
     def clean(self):
-        for key in self.cleaned_data.iterkeys():
+        for key in self.cleaned_data.keys():
             self.cleaned_data[key] = ','.join(
                 [ Address.objects.get(id=int(item)).mail_addr()
                     for item in self.cleaned_data[key]]

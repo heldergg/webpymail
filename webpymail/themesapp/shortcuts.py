@@ -79,14 +79,14 @@ def render_to_response(*args, **kwargs):
     httpresponse_kwargs = {'content_type': kwargs.pop('content_type', None)}
 
     if not isinstance(args[0], (list, tuple)):
-        if kwargs.has_key('context_instance'):
+        if 'context_instance' in kwargs:
             request = kwargs['context_instance']['request']
         else:
             request = None
         theme = get_theme( request )
 
         if settings.DEBUG:
-            print "get_theme returns:", theme
+            print("get_theme returns:", theme)
 
         template = [ '%s/%s' % (theme, args[0]), '%s/%s' % (DEFAULT_THEME, args[0]), args[0] ]
         args = list(args)

@@ -36,9 +36,8 @@ def do_spaces(parser, token):
         # split_contents() knows not to split quoted strings.
         tag_name, num_spaces = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError, \
-            "%r tag requires one arg: num_spaces" \
-            % token.contents.split()[0]
+        raise template.TemplateSyntaxError("%r tag requires one arg: num_spaces" \
+            % token.contents.split()[0])
 
     return PartTextNode(num_spaces)
 
@@ -51,7 +50,6 @@ class PartTextNode(template.Node):
         try:
             num_spaces = int(num_spaces)
         except ValueError:
-            raise template.TemplateSyntaxError, \
-                "%r tag's num_spaces argument must be an int" % tag_name
+            raise template.TemplateSyntaxError("%r tag's num_spaces argument must be an int" % tag_name)
 
         return '&nbsp;&nbsp;' * num_spaces
