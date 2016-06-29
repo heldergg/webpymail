@@ -45,13 +45,13 @@ if __name__ == '__main__':
     host = args[0]
 
     USER = getpass.getuser()
-    PASSWD = getpass.getpass("IMAP password for %s on %s: " % (USER, host or "localhost"))
+    PASSWD = getpass.getpass('IMAP password for %s on %s: ' % (USER, host or "localhost"))
 
-    M = imaplib2.imapll.IMAP4( host )
+    M = imaplib2.imapll.IMAP4(host)
 
-    pprint.pprint(M.send_command('LOGIN %s "%s"' % (USER, PASSWD)))
+    pprint.pprint(M.send_command(bytes('LOGIN %s "%s"' % (USER, PASSWD),'ascii')))
 
-    pprint.pprint(M.send_command('LIST "INBOX" "*"'))
+    pprint.pprint(M.send_command(b'LIST "INBOX" "*"'))
 
-    pprint.pprint(M.send_command('LOGOUT' ))
+    pprint.pprint(M.send_command(b'LOGOUT' ))
 

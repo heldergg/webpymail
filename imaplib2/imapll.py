@@ -54,10 +54,10 @@ MAXCOMLEN = 48      #: Max command len to store on the tagged_commands dict
 
 IMAP4_PORT = 143    #: Default IMAP port
 IMAP4_SSL_PORT = 993 #: Default IMAP SSL port
-CRLF = '\r\n'
+CRLF = b'\r\n'
 
-literal_re = re.compile('.*{(?P<size>\d+)}$')
-send_literal_re = re.compile('.*{(?P<size>\d+)}\r\n')
+literal_re = re.compile(br'.*{(?P<size>\d+)}$')
+send_literal_re = re.compile(br'.*{(?P<size>\d+)}\r\n')
 
 class IMAP4:
     '''Bare bones IMAP client.
@@ -101,9 +101,9 @@ class IMAP4:
         Debug = D_SERVER | D_CLIENT | D_RESPONSE
 
         M = IMAP4( host )
-        tag, response = M.send_command('LOGIN %s "%s"' % ('user', 'some pass'))
-        tag, response = M.send_command('CAPABILITY')
-        tag, response = M.send_command('LOGOUT' )
+        tag, response = M.send_command(b'LOGIN %s "%s"' % ('user', 'some pass'))
+        tag, response = M.send_command(b'CAPABILITY')
+        tag, response = M.send_command(b'LOGOUT' )
 
     '''
     class Error(Exception):
@@ -124,9 +124,9 @@ class IMAP4:
         # Create unique tag for this session,
         # and compile tagged response matcher.
         self.tagpre = Int2AP(random.randint(4096, 65535))
-        self.tagre = re.compile(r'(?P<tag>'
-                        + self.tagpre
-                        + r'\d+) (?P<type>[A-Z]+) (?P<data>.*)')
+        self.tagre = re.compile(br'(?P<tag>' +
+                        self.tagpre +
+                        br'\d+) (?P<type>[A-Z]+) (?P<data>.*)')
         self.tagnum = 0
 
         self.tagged_commands = {}
@@ -145,10 +145,10 @@ class IMAP4:
         else:
             self.parse_command = self.dummy_parse_command
 
-        if 'PREAUTH' in self.welcome:
-            self.state = 'AUTH'
-        elif 'OK' in self.welcome:
-            self.state = 'NONAUTH'
+        if b'PREAUTH' in self.welcome:
+            self.state = b'AUTH'
+        elif b'OK' in self.welcome:
+            self.state = b'NONAUTH'
         else:
             raise self.Error(self.welcome)
 
@@ -187,14 +187,14 @@ class IMAP4:
             raise self.Abort('socket error: EOF')
         if __debug__:
             if Debug & D_SERVER:
-                print('S: %s' % line.replace(CRLF,'<cr><lf>'))
+                print('S: %s' % line.replace(CRLF,b'<cr><lf>'))
         return line
 
     def send(self, data):
         '''Send data to remote.'''
         if __debug__:
             if Debug & D_CLIENT:
-                print('C: %s' % data.replace(CRLF,'<cr><lf>'))
+                print('C: %s' % data.replace(CRLF,b'<cr><lf>'))
         try:
             self.sock.sendall(data)
         except (socket.error, OSError) as val:
@@ -230,7 +230,7 @@ class IMAP4:
         '''
         Send a command to the server:
 
-            - Handles literals sent to teh server;
+            - Handles literals sent to the server;
             - Updates the tags sent to the server (<instance>.tagged_commands);
             - <instance>.tagged_commands[tag] - contains the first MAXCOMLEN
               of the command;
@@ -262,7 +262,7 @@ class IMAP4:
 
         # Send the command to the server
         self.tagged_commands[tag] = tagcommand
-        self.send('%s %s%s' % (tag, command, CRLF))
+        self.send(b'%s %s%s' % (tag, command, CRLF))
 
         if read_resp:
             return tag, self.read_responses(tag)
@@ -306,7 +306,7 @@ class IMAP4:
             # from the server up until there are no more responses
             resp = self._get_response()
 
-            if isinstance(resp,str):
+            if isinstance(resp,bytes):
                 response['untagged'].append(resp)
             elif isinstance(resp,dict):
                 # A tagged response is dict formated
@@ -346,7 +346,7 @@ class IMAP4:
     ##
     def _new_tag(self):
         '''Returns a new tag.'''
-        tag = '%s%03d' % (self.tagpre, self.tagnum)
+        tag = b'%s%03d' % (self.tagpre, self.tagnum)
         self.tagnum += 1
         return tag
 
@@ -398,10 +398,10 @@ class IMAP4:
                          'command': self.tagged_commands[tag] }
             del self.tagged_commands[tag]
             return response
-        elif line[:2] == '* ':
+        elif line[:2] == b'* ':
             # It's untagged
             return line
-        elif line[:2] == '+ ':
+        elif line[:2] == b'+ ':
             # It's a continuation, we're sending a literal
             self.send( self.continuation_data.pop(line[2:]) + CRLF )
             return None
@@ -409,17 +409,18 @@ class IMAP4:
             raise self.Abort('What now??? What\'s this:\nS: %s' % line)
 
 class IMAP4_SSL(IMAP4):
-    """IMAP4 client class over SSL connection
+    '''IMAP4 client class over SSL connection
 
     Instantiate with: IMAP4_SSL([host[, port[, keyfile[, certfile]]]])
 
             host - host's name (default: localhost);
             port - port number (default: standard IMAP4 SSL port).
-            keyfile - PEM formatted file that contains your private key (default: None);
+            keyfile - PEM formatted file that contains your private key
+                (default: None);
             certfile - PEM formatted certificate chain file (default: None);
 
     for more documentation see the docstring of the parent class IMAP4.
-    """
+    '''
     def __init__(self, host,
         port = IMAP4_SSL_PORT,
         keyfile = None,
@@ -431,11 +432,11 @@ class IMAP4_SSL(IMAP4):
         IMAP4.__init__(self, host=host, port=port, parse_command=parse_command)
 
     def open(self, host = '', port = IMAP4_SSL_PORT):
-        """Setup connection to remote server on "host:port".
+        '''Setup connection to remote server on "host:port".
             (default: localhost:standard IMAP4 SSL port).
         This connection will be used by the routines:
             read, readline, send, shutdown.
-        """
+        '''
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -449,7 +450,7 @@ class IMAP4_SSL(IMAP4):
             self.sslobj = socket.ssl(self.sock, self.keyfile, self.certfile)
 
     def read(self, size):
-        """Read 'size' bytes from remote."""
+        '''Read 'size' bytes from remote.'''
         if __debug__:
             if Debug & D_SERVER:
                 print('S: Read %d bytes from the server.' % size)
@@ -464,7 +465,7 @@ class IMAP4_SSL(IMAP4):
         return ''.join(chunks)
 
     def readline(self):
-        """Read line from remote."""
+        '''Read line from remote.'''
         # NB: socket.ssl needs a "readline" method, or perhaps a "makefile" method.
         line = []
         while 1:
@@ -473,15 +474,15 @@ class IMAP4_SSL(IMAP4):
             if char == "\n" or len(char)==0:
                 if __debug__:
                     if Debug & D_SERVER:
-                        print('S: %s' % ''.join(line).replace(CRLF,'<cr><lf>'))
+                        print('S: %s' % ''.join(line).replace(CRLF,b'<cr><lf>'))
                 return ''.join(line)
 
     def send(self, data):
-        """Send data to remote."""
+        '''Send data to remote.'''
         # NB: socket.ssl needs a "sendall" method to match socket objects.
         if __debug__:
             if Debug & D_CLIENT:
-                print('C: %s' % data.replace(CRLF,'<cr><lf>'))
+                print('C: %s' % data.replace(CRLF,b'<cr><lf>'))
         bytes = len(data)
         while bytes > 0:
             sent = self.sslobj.write(data)
@@ -491,21 +492,21 @@ class IMAP4_SSL(IMAP4):
             bytes = bytes - sent
 
     def shutdown(self):
-        """Close I/O established in "open"."""
+        '''Close I/O established in "open".'''
         self.sock.close()
 
     def socket(self):
-        """Return socket instance used to connect to IMAP4 server.
+        '''Return socket instance used to connect to IMAP4 server.
 
         socket = <instance>.socket()
-        """
+        '''
         return self.sock
 
     def ssl(self):
-        """Return SSLObject instance used to communicate with the IMAP4 server.
+        '''Return SSLObject instance used to communicate with the IMAP4 server.
 
         ssl = <instance>.socket.ssl()
-        """
+        '''
         return self.sslobj
 
 
@@ -519,7 +520,8 @@ if __name__ == '__main__':
 
     Debug = D_SERVER | D_CLIENT | D_RESPONSE
 
-    if not args: args = ('',)
+    if not args:
+        args = ('',)
 
     host = args[0]
 
@@ -528,7 +530,6 @@ if __name__ == '__main__':
 
     M = IMAP4( host )
 
-    M.send_command('LOGIN %s "%s"' % (USER, PASSWD))
+    M.send_command(bytes('LOGIN %s "%s"' % (USER, PASSWD),'ascii'))
 
-    M.send_command('LOGOUT' )
-
+    M.send_command(b'LOGOUT')
