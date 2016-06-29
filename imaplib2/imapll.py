@@ -22,8 +22,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 '''This is an IMAP low level module, it provides the basic mechanisms
 to connect to an IMAP server. It makes no attempt to parse the server responses.

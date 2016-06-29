@@ -22,8 +22,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 '''This is an IMAP parsed library. The final objective is to have a
 library which iteracts with an IMAP server (just like imaplib) and parses to

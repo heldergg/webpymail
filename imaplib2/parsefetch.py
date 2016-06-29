@@ -22,8 +22,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 '''Parse the fetch responses.
 '''

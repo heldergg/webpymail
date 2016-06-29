@@ -22,8 +22,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 '''Replacement for the standard python module imaplib.
 

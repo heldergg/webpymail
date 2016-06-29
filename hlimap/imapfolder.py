@@ -21,8 +21,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 from imapmessage import MessageList
 from imaplib2.parselist import Mailbox
 import base64

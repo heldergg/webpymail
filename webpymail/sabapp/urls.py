@@ -21,8 +21,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 from django.conf.urls import patterns, url
 

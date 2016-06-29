@@ -21,8 +21,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 import socket
 from imapfolder import FolderTree

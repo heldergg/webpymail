@@ -21,8 +21,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 '''Model file for the mailapp'''
 

@@ -22,8 +22,6 @@
 #
 # Helder Guerreiro <helder@tretas.org>
 #
-# $Id$
-#
 
 '''IMAP command list and their allowed states'''
 
