@@ -23,12 +23,12 @@
 # Helder Guerreiro <helder@tretas.org>
 #
 
-'''Example usage of imaplib2.imapll
+'''Example usage of imaplib2.imaplp
 '''
 
-import imaplib2.imapll
+import imaplib2.imapp
 
-imaplib2.imapll.Debug = 3
+imaplib2.imapp.Debug = 3
 
 if __name__ == '__main__':
     import getopt, getpass, sys, pprint
@@ -45,11 +45,39 @@ if __name__ == '__main__':
     USER = getpass.getuser()
     PASSWD = getpass.getpass('IMAP password for %s on %s: ' % (USER, host or "localhost"))
 
-    M = imaplib2.imapll.IMAP4(host)
+    # Login establish the connection to the server
+    M = imaplib2.imapp.IMAP4P( host )
 
-    pprint.pprint(M.send_command('LOGIN %s "%s"' % (USER, PASSWD)))
+    # Login to the server
+    M.login(USER, PASSWD)
 
-    pprint.pprint(M.send_command('LIST "INBOX" "*"'))
+    print(M.list("INBOX","*"))
+    print(M.examine("INBOX"))
+    print(M.examine("INBOX.Drafts"))
+    print("Close: ", M.close())
+    print()
 
-    pprint.pprint(M.send_command('LOGOUT' ))
+    for folder in M.list("INBOX","*"):
+        print(folder)
+
+    # Select a folder
+    M.select('INBOX.Templates')
+
+    ml = M.search_uid('ALL')
+
+    a = M.fetch_uid( ml )
+    print(len(list(a.keys())))
+
+    message_str = '''Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)
+From: adsasdas@adasdasd.cadc.cd
+Subject: afternoon meeting
+To: helder@grupo-oasis.com
+Message-Id: <B27397-0100000@Blurdybloop.COM>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+
+Hello Joe, do you think we can meet at 3:30 tomorrow?
+'''
+    for i in range(2):
+        M.append('INBOX.Templates', message_str)
 

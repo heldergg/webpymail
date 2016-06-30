@@ -53,7 +53,7 @@ COMMANDS = {
         'MYRIGHTS':     ('AUTH', 'SELECTED'),
         'NAMESPACE':    ('AUTH', 'SELECTED'),
         'NOOP':         ('NONAUTH', 'AUTH', 'SELECTED', 'LOGOUT'),
-        'PARTIAL':      ('SELECTED',),                            # NB: obsolete
+        'PARTIAL':      ('SELECTED',),      # NB: obsolete
         'PROXYAUTH':    ('AUTH',),
         'RENAME':       ('AUTH', 'SELECTED'),
         'SEARCH':       ('SELECTED',),
@@ -84,7 +84,7 @@ STATUS = ('ALERT',
           'UIDNEXT',
           'UIDVALIDITY',
           'UNSEEN',
-#          'APPENDUID', # RFC 2359 - IMAP4 UIDPLUS extension
+#         'APPENDUID', # RFC 2359 - IMAP4 UIDPLUS extension
          )
 
 # Fetch responses

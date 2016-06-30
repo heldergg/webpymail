@@ -267,7 +267,7 @@ class IMAP4P:
                 # Call handler function based on the response type
                 method_name = code.replace('.', '_')+'_response'
                 meth = getattr(self, method_name, self.default_response)
-                meth( code, args )
+                meth(code, args)
 
                 # TODO: Here we could emit the appropriate signals to a
                 # controler
@@ -477,7 +477,7 @@ class IMAP4P:
 
         # Composes the command
         if args:
-            command = '%s %s' % ( name, args )
+            command = '%s %s' % (name, args)
         else:
             command = name
 
@@ -501,7 +501,7 @@ class IMAP4P:
 
         name = 'APPEND'
 
-        message = map_crlf_re.sub('\r\n', message)
+        message = map_crlf_re.sub(CRLF, message)
         message = '{%d}%s%s' % (len(message), CRLF, message )
 
         aux_args = []

@@ -82,8 +82,8 @@ def getUnicodeMailAddr( address_list ):
 
 def Int2AP(num):
     """Convert integer to A-P string representation."""
-    val = b''
-    AP = b'ABCDEFGHIJKLMNOP'
+    val = ''
+    AP = 'ABCDEFGHIJKLMNOP'
     num = int(abs(num))
     while num:
         num, mod = divmod(num, 16)
