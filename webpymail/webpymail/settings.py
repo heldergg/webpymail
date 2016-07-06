@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -22,21 +20,39 @@
 # Helder Guerreiro <helder@tretas.org>
 #
 
+'''
+Django default settings for webpymail
+'''
+
+DEBUG=True
+
+##
+## BASE PATHS
+##
+
 import os.path
+PROJECT_DIR = os.path.abspath(os.path.join( os.path.dirname( __file__ ), '../..'))
+DJANGO_DIR = os.path.abspath(os.path.join( os.path.dirname( __file__ ), '..'))
 
-# Django settings for webpymail project.
-
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+##
+## Site admins and security
+##
 
 ADMINS = (
     ('SysAdm', 'sysadm@example.com'),
 )
 MANAGERS = ADMINS
 
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = '8v7=r99a*pjt(c@es=7wc1q2#d8ycj1!j6*zoy@pdg2y8@b*wt'
+
+##
+## Time and Language
+##
+
 # Local time zone for this installation.
 # Choices can be found here:
-#  http://www.postgresql.org/docs/8.1/static/datetime-keywords.html
+# http://www.postgresql.org/docs/8.1/static/datetime-keywords.html
 # although not all variations may be possible on all operating systems.
 # If running in a Windows environment this must be set to the same as
 # your system time zone.
@@ -47,54 +63,87 @@ TIME_ZONE = 'WET'
 # http://blogs.law.harvard.edu/tech/stories/storyReader$15
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = 1
-
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
 
+# A boolean that specifies if localized formatting of data will be
+# enabled by default or not. If this is set to True, e.g. Django will
+# display numbers and dates using the format of the current locale.
+USE_L10N = True
+
+##
+## Static files
+##
+
+# media  = user generated content
+# static = site's static files
+
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = './media/'
+MEDIA_ROOT = ''
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
-MEDIA_URL = '/media/'
+MEDIA_URL = ''
 
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/admin_media/'
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = os.path.join( PROJECT_DIR, 'collected_static' )
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = '8v7=r99a*pjt(c@es=7wc1q2#d8ycj1!j6*zoy@pdg2y8@b*wt'
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = '/static/'
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
+# Additional locations of static files
+STATICFILES_DIRS = (
+    os.path.join(DJANGO_DIR, 'static'),
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
 )
 
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.contrib.messages.context_processors.messages',
-    'django.core.context_processors.request',
-    'themesapp.context_processors.theme_name')
+##
+## Templates
+##
+
+TEMPLATES = [
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': [ os.path.join(PROJECT_DIR, 'templates'), ],
+            'APP_DIRS': True,
+            'OPTIONS': {
+                'context_processors': [
+                    'django.contrib.auth.context_processors.auth',
+                    'django.template.context_processors.debug',
+                    'django.template.context_processors.i18n',
+                    'django.template.context_processors.media',
+                    'django.template.context_processors.static',
+                    'django.template.context_processors.tz',
+                    'django.contrib.messages.context_processors.messages',
+                    'django.core.context_processors.request',
+                    'themesapp.context_processors.theme_name'
+                    ],
+                }
+            }
+        ]
+
+
+##
+## Applications and middleware
+##
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
 )
 
 ROOT_URLCONF = 'webpymail.urls'
-
-PROJDIR = os.path.join( os.path.abspath(os.path.dirname(__file__)), '..' )
-TEMPLATE_DIRS = ( os.path.join(PROJDIR, 'templates').replace('\\', '/'), )
 
 INSTALLED_APPS = (
     # Django apps
@@ -110,22 +159,19 @@ INSTALLED_APPS = (
     'themesapp',
 )
 
-######################
-# WEBPYMAIL SETTINGS #
-######################
-
-DEFAULT_FOLDER = 'INBOX'
-
-###################
-# DJANGO SETTINGS #
-###################
+##
+## DATABASE
+##
 
 # Database Setup:
-
 DATABASES = { 'default': { 'ENGINE': 'django.db.backends.sqlite3',
                            'NAME': './webpymail.db',
                          }
             }
+
+##
+## Autentication and sessions
+##
 
 # User profiles:
 
@@ -148,14 +194,20 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_URL  = '/auth/login/'
 LOGOUT_URL = '/auth/logout/'
 
+##
+## Webpymail specific settings
+##
+
+DEFAULT_FOLDER = 'INBOX'
+
 # DISPLAY SETTINGS
 
 # TODO: this should be an user setting:
 MESSAGES_PAGE = 50 # Number of messages per page to display
 
 # Mail compose form
-MAXADDRESSES = 50   # Maximum number of mails that can be used on a To, Cc or
-                    # Bcc field.
+MAXADDRESSES = 50   # Maximum number of addresses that can be used on a To, Cc
+                    # or Bcc field.
 SINGLELINELEN = 60
 TEXTAREAROWS = 15
 TEXTAREACOLS = 60
@@ -164,10 +216,8 @@ TEXTAREACOLS = 60
 
 TEMPDIR = '/tmp' # Temporary dir to store the attachements
 
-# User configuration dir:
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
-
-CONFIGDIR = os.path.join('/home/helder/prg/webpymail-config')
+# User configuration directories:
+CONFIGDIR = PROJECT_DIR
 USERCONFDIR = os.path.join(CONFIGDIR, 'users')
 SERVERCONFDIR = os.path.join(CONFIGDIR, 'servers')
 FACTORYCONF = os.path.join(CONFIGDIR,'factory.conf')
@@ -179,7 +229,7 @@ SYSTEMCONF  = os.path.join(CONFIGDIR,'system.conf')
 # Do not change anything beyond this point... #
 ###############################################
 
-WEBPYMAIL_VERSION = 'SVN'
+WEBPYMAIL_VERSION = 'GIT'
 
 ##
 ## LOCAL SETTINGS
