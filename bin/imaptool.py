@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 # hlimap - High level IMAP library
 # Copyright (C) 2008 Helder Guerreiro
@@ -30,7 +29,7 @@ import getpass
 
 from hlimap import ImapServer
 
-## 
+##
 # Utility functions
 ##
 
@@ -55,21 +54,21 @@ def usage():
         --list-mailboxes [mailbox patern]
                                 List available mailboxes, accepts a regex as a
                                 patern
-        --mark-read <mailbox patern>   
-                                Mark the messages read, accepts a regex as a 
+        --mark-read <mailbox patern>
+                                Mark the messages read, accepts a regex as a
                                 patern
 
     Options:
         -o <imap server>
         --host <imap server>    (default: localhost) define the imap server to
                                 connect to
-        -u <user name>                        
+        -u <user name>
         --user <user name>      (default: $USER) imap user name
         -s <type>
         --security <type>       (default: NONE) available options are: SSL,
                                 NONE
         -p
-        --port                  (default: 143) port to connect to, if SSL 
+        --port                  (default: 143) port to connect to, if SSL
                                 security is used the default changes to 993
 
         -h --help               This help screen\n
@@ -82,7 +81,7 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ho:u:s:p:',
             ['list-mailboxes=', 'mark-read=',
-            'host=', 'user=', 'security=', 'port=', 
+            'host=', 'user=', 'security=', 'port=',
             'help'])
     except getopt.GetoptError as err:
         print(str(err))
@@ -119,7 +118,7 @@ if __name__ == '__main__':
     # Mandatory args
     for o, a in opts:
         if o == '--list-mailboxes':
-            ssl = security == 'SSL'            
+            ssl = security == 'SSL'
             server = server_login(host, port, ssl, user)
             if not a:
                 regex = '.*'
@@ -133,7 +132,7 @@ if __name__ == '__main__':
             sys.exit()
 
         elif o == '--mark-read':
-            ssl = security == 'SSL'            
+            ssl = security == 'SSL'
             server = server_login(host, port, ssl, user)
             print('Going to mark messages read')
             if not a:
@@ -145,8 +144,8 @@ if __name__ == '__main__':
                 folder.select()
                 message_list = folder.message_list
                 message_list.refresh_messages()
-                raw_message_list = [ uid for uid in 
-                    message_list.flat_message_list ] 
+                raw_message_list = [ uid for uid in
+                    message_list.flat_message_list ]
                 folder.set_flags( raw_message_list , r'\Seen')
             print('Done.')
 
