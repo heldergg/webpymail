@@ -76,7 +76,7 @@ class FolderTree(object):
     def add_folder( self, parts, subscribed, child = None, noselect = False ):
         path = self.dl.join( parts )
         if path not in self.folder_dict:
-            self.folder_dict[ path ] = { 'data' : Folder(self.server, self, 
+            self.folder_dict[ path ] = { 'data' : Folder(self.server, self,
                                             parts, subscribed, noselect),
                                          'children': [] }
             if len(parts) == 1:
@@ -110,26 +110,13 @@ class FolderTree(object):
     def sort(self, folder_list = None):
         '''Sorts the folders.
         '''
-        def compare( name1, name2 ):
-            spc1 = self.folder_dict[name1]['data'].special
-            spc2 = self.folder_dict[name2]['data'].special
-            if spc1 and not spc2:
-                return -1
-            elif not spc1 and spc2:
-                return 1
-            else:
-                return cmp( name1, name2 )
-
         if not folder_list:
             folder_list = self.root_folder
-
-        folder_list.sort(compare)
-
+        folder_list.sort(key=lambda name: self.folder_dict[name]['data'])
         for folder_name in folder_list:
             children = self.folder_dict[folder_name]['children']
             if children:
                 self.sort( children )
-
 
     def refresh_status(self):
         for folder in self.iter_all():
@@ -254,7 +241,7 @@ class Folder(object):
 
         # Tree behavior
         self.expanded = False
-        self.special = False
+        self.special = False # Is it a special folder? - trash, sent, etc
         self.noselect = noselect
         self.subscribed = subscribed
 
@@ -277,6 +264,16 @@ class Folder(object):
             ## should also be expanded
             #if self.parent:
                 #self.tree.folder_dict[self.parent]['data'].set_expand(True)
+
+    # Sorting
+    def __lt__(self, folder):
+        spc1 = self.special
+        spc2 = folder.special
+        if spc1 and not spc2:
+            return True
+        elif not spc1 and spc2:
+            return False
+        return self.name < folder.name
 
     # Mailbox statistics
     def refresh_status(self):
@@ -322,7 +319,7 @@ class Folder(object):
         return base64.urlsafe_b64encode(self.path)
 
     def unicode_name(self):
-        return self.__unicode__()
+        return self.__str__()
 
     # Messages
     def append( self, message ):
@@ -395,14 +392,14 @@ class Folder(object):
         return self.message_list.paginator
 
     # Special methods
-    def __unicode__(self):
-        mailbox = self.name
+    def __str__(self):
+        mailbox = bytes(self.name,'ascii')
         try:
-            return str(mailbox.replace('+','+-').replace('&','+'
-                ).replace(',','/'),'utf-7')
+            return str(mailbox.replace(b'+',b'+-').replace(b'&',b'+'
+                ).replace(b',',b'/'),'utf-7')
         except UnicodeDecodeError:
-            return str(mailbox.replace('+','+-').replace('&','+'
-                ).replace(',','/'),'utf-8')
+            return str(mailbox.replace(b'+',b'+-').replace(b'&',b'+'
+                ).replace(b',',b'/'),'utf-8')
 
     def __repr__(self):
         return '<Folder instance "%s">' % (self.name)
