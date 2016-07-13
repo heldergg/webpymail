@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # sabapp - Simple Address Book Application
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -22,17 +20,19 @@
 # Helder Guerreiro <helder@tretas.org>
 #
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
+
+from sabapp import views
 
 # Manage:
-urlpatterns = patterns('sabapp.views',
-    url(r'^add/$', 'manage_address', name='add_address'),
-    url(r'^edit/(?P<address_id>\d+)/$', 'manage_address', name='edit_address'),
-    url(r'^del/(?P<address_id>\d+)/$', 'delete_address', name='delete_address'),
-    )
+urlpatterns = [
+    url(r'^add/$', views.manage_address, name='add_address'),
+    url(r'^edit/(?P<address_id>\d+)/$', views.manage_address, name='edit_address'),
+    url(r'^del/(?P<address_id>\d+)/$', views.delete_address, name='delete_address'),
+    ]
 
 # Browse:
-urlpatterns += patterns('sabapp.views',
-    url(r'^$', 'browse_addresses', name='browse_addresses'),
-    url(r'^compose/$', 'compose_to_addresses', name='compose_to_addresses'),
-    )
+urlpatterns += [
+    url(r'^$', views.browse_addresses, name='browse_addresses'),
+    url(r'^compose/$', views.compose_to_addresses, name='compose_to_addresses'),
+    ]

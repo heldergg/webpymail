@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
@@ -27,36 +26,29 @@
 
 # Global imports:
 from django.conf import settings
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
+
+# Local Imports
+from mailapp.views.message import index, not_implemented
 
 admin.autodiscover()
 
-urlpatterns = patterns('',
-    # Root:
-    (r'^$','mailapp.views.message.index'),
-
-    # Mail Interface:
-    (r'^mail/', include('mailapp.urls')),
-
-    # Address book:
-    (r'^ab/', include('sabapp.urls')),
-
-    # Authentication interface:
-    (r'^auth/', include('wpmauth.urls')),
-
-    # Admin Interface:
-    (r'^admin/', include(admin.site.urls)),
-
-    # Generic:
-    url(r'^not_implemented/$', 'mailapp.views.message.not_implemented',
-        name='not_implemented'),
-)
+urlpatterns = [
+        # Root:
+        url(r'^$', index),
+        # Mail Interface:
+        url(r'^mail/', include('mailapp.urls')),
+        # Address book:
+        url(r'^ab/', include('sabapp.urls')),
+        # Authentication interface:
+        url(r'^auth/', include('wpmauth.urls')),
+        # Admin Interface:
+        url(r'^admin/', include(admin.site.urls)),
+        # Generic:
+        url(r'^not_implemented/$', not_implemented, name='not_implemented'),
+        ]
 
 if settings.DEBUG:
-    urlpatterns += patterns('',
-        # DEVELOPMENT
-        # The site wide media folder:
-        (r'^media/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': 'media/'}),
-    )
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    urlpatterns += staticfiles_urlpatterns()

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -25,55 +23,52 @@
 """Mail interface"""
 
 # Global imports:
-from django.conf.urls import patterns, url
+from django.conf.urls import url
+
+from mailapp.views import folder, message_list, message, compose
 
 folder_pat = r'FOLDER_(?P<folder>[A-Za-z0-9+.&%_=-]+)'
 
 # Folders views:
-urlpatterns = patterns('mailapp.views.folder',
-    url(r'^$', 'show_folders_view', name='folder_list'),
-    url(r'^' + folder_pat + r'/expand/$', 'set_folder_expand',
-        name='set_folder_expand'),
-    url(r'^' + folder_pat + r'/collapse/$', 'set_folder_collapse',
-        name='set_folder_collapse'),
-)
+urlpatterns = [
+        url(r'^$', folder.show_folders_view, name='folder_list'),
+        url(r'^' + folder_pat + r'/expand/$', folder.set_folder_expand,
+            name='set_folder_expand'),
+        url(r'^' + folder_pat + r'/collapse/$', folder.set_folder_collapse,
+            name='set_folder_collapse'),
+        ]
 
 # Message list views
-urlpatterns += patterns('mailapp.views.message_list',
-    url(r'^' + folder_pat + r'/$', 'show_message_list_view',
-        name='message_list'),
-)
+urlpatterns += [
+        url(r'^' + folder_pat + r'/$', message_list.show_message_list_view,
+            name='message_list'),
+        ]
 
 # Messages views:
-urlpatterns += patterns('mailapp.views.message',
-    url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/$', 'show_message',
-        name='mailapp-message'),
-
-    url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/$',
-        'get_msg_part', name='mailapp_message_part'),
-
-    url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/inline/$',
-        'get_msg_part_inline', name='mailapp_mpart_inline'),
-
-    url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/HEADER/$',
-        'message_header', name='mailapp_message_header'),
-
-    url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/STRUCTURE/$',
-        'message_structure', name='mailapp_message_structure'),
-
-    url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/SOURCE/$',
-        'message_source', name='mailapp_message_source'),
-    )
+urlpatterns += [
+        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/$', message.show_message,
+            name='mailapp-message'),
+        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/$',
+            message.get_msg_part, name='mailapp_message_part'),
+        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/inline/$',
+            message.get_msg_part_inline, name='mailapp_mpart_inline'),
+        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/HEADER/$',
+            message.message_header, name='mailapp_message_header'),
+        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/STRUCTURE/$',
+            message.message_structure, name='mailapp_message_structure'),
+        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/SOURCE/$',
+            message.message_source, name='mailapp_message_source'),
+        ]
 
 # Compose messages:
-urlpatterns += patterns('mailapp.views.compose',
-    url(r'^compose/$', 'new_message', name='mailapp_send_message'),
+urlpatterns += [
+    url(r'^compose/$', compose.new_message, name='mailapp_send_message'),
     url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/REPLY/$',
-        'reply_message', name='mailapp_reply_message'),
+        compose.reply_message, name='mailapp_reply_message'),
     url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/REPLYALL/$',
-        'reply_all_message', name='mailapp_reply_all_message'),
+        compose.reply_all_message, name='mailapp_reply_all_message'),
     url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/FORWARD_INLINE/$',
-        'forward_message_inline', name='mailapp_forward_inline_message'),
+        compose.forward_message_inline, name='mailapp_forward_inline_message'),
     url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/FORWARD/$',
-        'forward_message', name='mailapp_forward_message'),
-    )
+        compose.forward_message, name='mailapp_forward_message'),
+    ]

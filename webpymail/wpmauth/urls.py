@@ -22,11 +22,13 @@
 # Helder Guerreiro <helder@tretas.org>
 #
 
-from django.conf.urls import patterns, url
-
 """Authentication interface"""
 
-urlpatterns = patterns('wpmauth.views',
-    url(r'^login/$', 'loginView', name='login'),
-    url(r'^logout/$', 'logoutView', name='logout'),
-    )
+from django.conf.urls import url
+
+from wpmauth import views
+
+urlpatterns = [
+    url(r'^login/$', views.loginView, name='login'),
+    url(r'^logout/$', views.logoutView, name='logout'),
+    ]
