@@ -87,12 +87,9 @@ class UserProfile(models.Model):
 
     This record is automatically created on the user first login on the system.
     '''
-    user = models.ForeignKey(User, unique=True)
+    user = models.OneToOneField(User)
 
-    default_identity = models.ForeignKey(
-        UserIdentity,
-        unique=True,
-        null=True )
+    default_identity = models.OneToOneField(UserIdentity, null=True)
 
     sent_folder = models.TextField(max_length=128, default='INBOX')
 
