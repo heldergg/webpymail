@@ -1,2 +1,1 @@
-django
-markdown
+Django==1.9.7
