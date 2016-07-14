@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
@@ -44,7 +43,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.template import RequestContext
-from django.utils.encoding import smart_unicode
+from django.utils.encoding import smart_text
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
 
@@ -52,7 +51,7 @@ from django.utils.translation import ugettext as _
 from mailapp.models import Attachments
 from .mail_utils import serverLogin, send_mail, join_address_list, mail_addr_str, mail_addr_name_str, quote_wrap_lines, show_addrs, compose_rfc822
 from utils.config import WebpymailConfig
-from themesapp.shortcuts import render_to_response
+from themesapp.shortcuts import render
 
 from mailapp.forms import ComposeMailForm
 
@@ -201,7 +200,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
 
             if text_format == MARKDOWN and HAS_MARKDOWN:
                 md = markdown.Markdown(output_format='HTML')
-                message_html = md.convert(smart_unicode(message_text))
+                message_html = md.convert(smart_text(message_text))
                 css = config.get('message', 'css')
                 # TODO: use a template to get the html and insert the css
                 message_html = '<html>\n<style>%s</style><body>\n%s\n</body>\n</html>' % (css, message_html)
@@ -228,21 +227,18 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
                 error_message = ''.join(
                     ['<p>%s' % escape(detail.recipients[Xi][1])
                      for Xi in detail.recipients ] )
-                return render_to_response('mail/send_message.html', {'form':form,
+                return render(request, 'mail/send_message.html', {'form':form,
                     'server_error': error_message,
-                    'uploaded_files': uploaded_files},
-                    context_instance=RequestContext(request))
+                    'uploaded_files': uploaded_files})
             except SMTPException as detail:
-                return render_to_response('mail/send_message.html', {'form':form,
+                return render(request, 'mail/send_message.html', {'form':form,
                     'server_error': '<p>%s' % detail,
-                    'uploaded_files': uploaded_files},
-                    context_instance=RequestContext(request))
+                    'uploaded_files': uploaded_files})
             except Exception as detail:
                 error_message = '<p>%s' % detail
-                return render_to_response('mail/send_message.html', {'form':form,
+                return render(request, 'mail/send_message.html', {'form':form,
                     'server_error': error_message,
-                    'uploaded_files': uploaded_files},
-                    context_instance=RequestContext(request))
+                    'uploaded_files': uploaded_files})
 
             # Store the message on the sent folder
             imap_store( request,user_profile.sent_folder, message )
@@ -252,9 +248,8 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
 
             return HttpResponseRedirect('/')
         else:
-            return render_to_response('mail/send_message.html', {'form':form,
-                'uploaded_files': uploaded_files },
-                    context_instance=RequestContext(request))
+            return render(request, 'mail/send_message.html', {'form':form,
+                'uploaded_files': uploaded_files })
 
     else:
         initial= { 'text_format': 1,
@@ -273,9 +268,8 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
 
         form = ComposeMailForm(initial=initial,
             request = request )
-        return render_to_response('mail/send_message.html', {'form':form,
-            'uploaded_files': uploaded_files },
-            context_instance=RequestContext(request))
+        return render(request, 'mail/send_message.html', {'form':form,
+            'uploaded_files': uploaded_files })
 
 @login_required
 def new_message( request ):

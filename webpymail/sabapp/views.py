@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # sabapp - Simple Address Book Application
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -28,13 +26,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import Http404
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.template import RequestContext
 from django.views.decorators.http import require_POST
 
 from .forms import AddressForm, ComposeToForm
 from .models import Address
-from themesapp.shortcuts import render_to_response
+from themesapp.shortcuts import render
 
 # Views:
 
@@ -95,16 +93,14 @@ def manage_address(request, address_id = None):
                                                   'last_name':last_name,
                                                   'email':email})
 
-    return render_to_response('sab/manage_address.html', context ,
-        context_instance=RequestContext(request))
+    return render(request, 'sab/manage_address.html', context)
 
 @login_required
 def browse_addresses(request):
     address_list = Address.objects.for_request(request)
 
-    return render_to_response('sab/browse_addresses.html',
-        { 'address_list': address_list },
-        context_instance=RequestContext(request))
+    return render(request, 'sab/browse_addresses.html',
+        { 'address_list': address_list })
 
 
 @login_required

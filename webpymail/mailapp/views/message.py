@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -38,7 +36,7 @@ from django.utils.translation import gettext_lazy as _
 
 # Local
 from .mail_utils import serverLogin
-from themesapp.shortcuts import render_to_response
+from themesapp.shortcuts import render
 from utils.config import WebpymailConfig
 from . import msgactions
 
@@ -63,10 +61,9 @@ def show_message(request, folder, uid):
         except hlimap.imapmessage.MessageNotFound:
             return redirect('message_list', folder=folder.url() )
 
-    return render_to_response('mail/message_body.html',{'folder':folder,
+    return render(request, 'mail/message_body.html',{'folder':folder,
         'message':message,
-        'inline_img': config.getboolean('message', 'show_images_inline')},
-        context_instance=RequestContext(request))
+        'inline_img': config.getboolean('message', 'show_images_inline')})
 
 @login_required
 def message_header( request, folder, uid ):
@@ -78,9 +75,8 @@ def message_header( request, folder, uid ):
     folder = M[folder_name]
     message = folder[int(uid)]
 
-    return render_to_response('mail/message_header.html',{'folder':folder,
-        'message':message},
-        context_instance=RequestContext(request))
+    return render(request, 'mail/message_header.html',{'folder':folder,
+        'message':message})
 
 @login_required
 def message_structure( request, folder, uid ):
@@ -92,9 +88,8 @@ def message_structure( request, folder, uid ):
     folder = M[folder_name]
     message = folder[int(uid)]
 
-    return render_to_response('mail/message_structure.html',{'folder':folder,
-        'message':message},
-        context_instance=RequestContext(request))
+    return render(request, 'mail/message_structure.html',{'folder':folder,
+        'message':message})
 
 @login_required
 def message_source( request, folder, uid ):
@@ -110,9 +105,8 @@ def message_source( request, folder, uid ):
     # message.
     source = str(message.source(),'ISO-8859-1')
 
-    return render_to_response('mail/message_source.html',{'folder':folder,
-        'message':message, 'source': source },
-        context_instance=RequestContext(request))
+    return render(request, 'mail/message_source.html',{'folder':folder,
+        'message':message, 'source': source })
 
 @login_required
 def get_msg_part( request, folder, uid, part_number, inline = False ):
@@ -151,8 +145,7 @@ def get_msg_part_inline( request, folder, uid, part_number ):
     return get_msg_part( request, folder, uid, part_number, True )
 
 def not_implemented(request):
-    return render_to_response('mail/not_implemented.html',
-        context_instance=RequestContext(request))
+    return render(request, 'mail/not_implemented.html')
 
 @login_required
 def index(request):

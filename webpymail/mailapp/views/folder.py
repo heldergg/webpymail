@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -38,7 +36,7 @@ from django.template import RequestContext
 # Local
 from mailapp.models import FoldersToExpand
 from .mail_utils import serverLogin
-from themesapp.shortcuts import render_to_response
+from themesapp.shortcuts import render
 from utils.config import WebpymailConfig
 
 ##
@@ -69,10 +67,9 @@ def show_folders_view(request):
     identity_list = config.identities()
     default_address = identity_list[0]['mail_address']
 
-    return render_to_response('mail/folder_list.html',
+    return render(request, 'mail/folder_list.html',
         {'server': M,
-         'address': default_address },
-        context_instance=RequestContext(request))
+         'address': default_address })
 
 @login_required
 def set_folder_expand(request, folder):

@@ -23,8 +23,7 @@
 #
 
 from django.conf import settings
-from django.http import HttpResponse
-from django.template import loader
+from django.shortcuts import render as django_render
 
 from utils.config import WebpymailConfig
 
@@ -48,12 +47,12 @@ def get_theme( request ):
         return theme
 
     # From the django session
-    theme = request.session.get('theme', None )
+    theme = request.session.get('theme', None)
     if theme:
         return theme
 
     # From Webpymail configuration
-    config =  WebpymailConfig( request )
+    config =  WebpymailConfig(request)
     theme = config.get('general', 'theme')
     if theme:
         request.session['theme'] = theme
@@ -62,9 +61,13 @@ def get_theme( request ):
     # From settings.py
     return DEFAULT_THEME
 
-def render_to_response(*args, **kwargs):
+def render(request, template_name, context=None, content_type=None,
+        status=None, using=None):
     '''
-    This is a version of the default django render_to_response shortcut.
+    This is a version of the default django render shortcut.
+
+    No deprecated args as of django 1.9 are used.
+
     Just like the original it returns a HttpResponse whose content is
     filled with the result of calling django.template.loader.render_to_string()
     with the passed arguments.
@@ -76,21 +79,12 @@ def render_to_response(*args, **kwargs):
 
     The first template to be found is used.
     '''
-    httpresponse_kwargs = {'content_type': kwargs.pop('content_type', None)}
-
-    if not isinstance(args[0], (list, tuple)):
-        if 'context_instance' in kwargs:
-            request = kwargs['context_instance']['request']
-        else:
-            request = None
-        theme = get_theme( request )
-
-        if settings.DEBUG:
-            print("get_theme returns:", theme)
-
-        template = [ '%s/%s' % (theme, args[0]), '%s/%s' % (DEFAULT_THEME, args[0]), args[0] ]
-        args = list(args)
-        args[0] = template
-        args = tuple(args)
-
-    return HttpResponse(loader.render_to_string(*args, **kwargs), **httpresponse_kwargs)
+    theme = get_theme( request )
+    if settings.DEBUG:
+        print('get_theme returns:', theme)
+    template = [
+            '%s/%s' % (theme, template_name),
+            '%s/%s' % (DEFAULT_THEME, template_name),
+            template_name ]
+    return django_render(request, template, context=context,
+            content_type=content_type, status=status, using=using)

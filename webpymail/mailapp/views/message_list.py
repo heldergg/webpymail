@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -37,7 +35,7 @@ from django.template import RequestContext
 # Local
 from mailapp.forms import MessageActionForm
 from .mail_utils import serverLogin
-from themesapp.shortcuts import render_to_response
+from themesapp.shortcuts import render
 from utils.config import WebpymailConfig
 from . import msgactions
 
@@ -94,11 +92,10 @@ def show_message_list_view(request, folder=settings.DEFAULT_FOLDER):
     default_address = identity_list[0]['mail_address']
 
     # Show the message list
-    return render_to_response( 'mail/message_list.html',{
+    return render(request,  'mail/message_list.html',{
             'folder':folder,
             'address': default_address,
             'paginator': folder.paginator(),
             'query':query,
-            'form':form },
-            context_instance=RequestContext(request))
+            'form':form })
 
