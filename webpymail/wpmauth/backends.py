@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
@@ -25,7 +23,9 @@
 import imaplib
 
 from django.conf import settings
-from django.contrib.auth.models import User, check_password
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
+from django.apps import apps
 from django.db import models
 
 def generatePassword( password_len = 40 ):
@@ -70,7 +70,7 @@ class ImapBackend:
                 if settings.AUTH_PROFILE_MODULE:
                     # Create the user profile
                     app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
-                    model = models.get_model(app_label, model_name)
+                    model = apps.get_model(app_label, model_name)
                     profile = model( user = user )
                     profile.save()
 
