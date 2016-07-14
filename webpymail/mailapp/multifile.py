@@ -5,13 +5,12 @@ Created by Edward Dale (www.scompt.com)
 Released into the Public Domain
 """
 
-from django.utils.encoding import force_unicode
 from django.utils.datastructures import MultiValueDict
 from django.utils.translation import ugettext
 from django.forms.fields import Field, EMPTY_VALUES
 from django.core.files.uploadedfile import UploadedFile
 from django.forms.widgets import FileInput
-from django.forms.util import ErrorList, ValidationError, flatatt
+from django.forms.utils import ErrorList, ValidationError, flatatt
 
 class MultiFileInput(FileInput):
     """
