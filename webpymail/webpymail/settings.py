@@ -39,7 +39,7 @@ DJANGO_DIR = os.path.abspath(os.path.join( os.path.dirname( __file__ ), '..'))
 ##
 
 ADMINS = (
-    ('SysAdm', 'sysadm@example.com'),
+    ('sysadm', 'sysadm@example.com'),
 )
 MANAGERS = ADMINS
 
@@ -112,7 +112,7 @@ STATICFILES_DIRS = (
 TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': [ os.path.join(PROJECT_DIR, 'templates'), ],
+            'DIRS': [ os.path.join(DJANGO_DIR, 'templates'), ],
             'APP_DIRS': True,
             'OPTIONS': {
                 'context_processors': [
@@ -122,14 +122,13 @@ TEMPLATES = [
                     'django.template.context_processors.media',
                     'django.template.context_processors.static',
                     'django.template.context_processors.tz',
+                    'django.template.context_processors.request',
                     'django.contrib.messages.context_processors.messages',
-                    'django.core.context_processors.request',
                     'themesapp.context_processors.theme_name'
                     ],
                 }
             }
         ]
-
 
 ##
 ## Applications and middleware
@@ -236,6 +235,6 @@ WEBPYMAIL_VERSION = 'GIT'
 ##
 
 try:
-    from local_settings import *
+    from .local_settings import *
 except ImportError:
     pass

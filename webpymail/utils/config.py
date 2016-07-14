@@ -32,9 +32,13 @@ import re
 
 from django.conf import settings
 
-from utils.mix import cmp_dict
-
 # WebpymailConfig class
+
+USERCONFDIR = getattr(settings, 'USERCONFDIR')
+SERVERCONFDIR = getattr(settings, 'SERVERCONFDIR')
+FACTORYCONF = getattr(settings, 'FACTORYCONF')
+DEFAULTCONF = getattr(settings, 'DEFAULTCONF')
+SYSTEMCONF = getattr(settings, 'SYSTEMCONF')
 
 class WebpymailConfig(SafeConfigParser):
     '''
@@ -46,26 +50,21 @@ class WebpymailConfig(SafeConfigParser):
         # Note that SafeConfigParser if not a new class so we have to explicitly
         # call the __init__method
         SafeConfigParser.__init__(self)
-        
         try:
             host = request.session['host']
-            username = request.session['username'] 
-            user_conf = os.path.join(settings.USERCONFDIR, '%s@%s.conf' % (username,host))
-
+            username = request.session['username']
+            user_conf = os.path.join(USERCONFDIR, '%s@%s.conf' % (username,host))
             if not os.path.isfile(user_conf): # Touch the user configuration file
                 open(user_conf, 'w').close()
-
-            server_conf = os.path.join(settings.SERVERCONFDIR, '%s.conf' % host )
-
-            config_files =  [ settings.FACTORYCONF,
-                              settings.DEFAULTCONF,
+            server_conf = os.path.join(SERVERCONFDIR, '%s.conf' % host )
+            config_files =  [ FACTORYCONF,
+                              DEFAULTCONF,
                               user_conf,
                               server_conf,
-                              settings.SYSTEMCONF ]
+                              SYSTEMCONF ]
         except KeyError:
-            config_files = [ settings.FACTORYCONF,
-                             settings.DEFAULTCONF ]
-
+            config_files = [ FACTORYCONF,
+                             DEFAULTCONF ]
         self.read( config_files )
 
     identity_re = re.compile(r'^identity-(?P<id_number>[0-9]+)$')
@@ -81,9 +80,9 @@ class WebpymailConfig(SafeConfigParser):
                 identity = {}
                 identity['id_number'] = int(identity_sec.group('id_number'))
                 for option in self.options(section):
-                    identity[option] = self.get( section, option )
-                identity_list.append( identity )
-        identity_list.sort(cmp_dict( 'id_number' ))
+                    identity[option] = self.get(section, option)
+                identity_list.append(identity)
+        identity_list.sort(key=lambda identity: identity['id_number'])
 
         return identity_list
 
@@ -113,6 +112,6 @@ def server_list():
         for option in config.options(server):
             s[option] = config.get( server, option )
         server_list.append(s)
-    server_list.sort(cmp_dict('name'))
+    server_list.sort(key=lambda server: server['name'])
 
     return server_list
