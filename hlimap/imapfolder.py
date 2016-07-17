@@ -23,8 +23,10 @@
 #
 from .imapmessage import MessageList
 from imaplib2.parselist import Mailbox
+from imaplib2.utils import to_bytes
 import base64
 import re
+
 
 class DupError(Exception): pass
 class NoSuchFolder(Exception): pass
@@ -316,7 +318,7 @@ class Folder(object):
     def url(self):
         '''Return the folder name on a url safe way
         '''
-        return base64.urlsafe_b64encode(self.path)
+        return base64.urlsafe_b64encode(to_bytes(self.path))
 
     def unicode_name(self):
         return self.__str__()

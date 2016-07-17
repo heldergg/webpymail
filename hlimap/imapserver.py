@@ -129,7 +129,8 @@ class ImapServer(object):
         '''Returns a folder object'''
         if not self.folder_tree:
             self.folder_tree = FolderTree( self )
-
+        if isinstance(path, bytes):
+            path = str(path,'ascii')
         return self.folder_tree.get_folder(path)
 
     def __iter__(self):

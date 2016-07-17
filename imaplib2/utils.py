@@ -32,6 +32,11 @@ import re
 from email.header import decode_header
 from email.errors import HeaderParseError
 
+def to_bytes(s, encoding='utf-8'):
+    if isinstance(s,str):
+        s = bytes(s,encoding)
+    return s
+
 # Utility functions
 def getUnicodeHeader( header ):
     '''Returns an unicode string with the content of the
