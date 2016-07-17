@@ -33,7 +33,7 @@ standard python IMAP client module) by Piers Lauder.
 '''
 
 # Global imports
-import socket, random, re
+import socket, random, re, ssl
 
 # Local imports
 from .imapcommands import COMMANDS
@@ -440,13 +440,7 @@ class IMAP4_SSL(IMAP4):
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
-
-        try:
-            import ssl
-            self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
-        except ImportError:
-            # socket.ssl is deprectated in python >= 2.6
-            self.sslobj = socket.ssl(self.sock, self.keyfile, self.certfile)
+        self.sslobj = ssl.wrap_socket(self.sock, self.keyfile, self.certfile)
 
     def read(self, size):
         '''Read 'size' bytes from remote.'''
@@ -470,7 +464,7 @@ class IMAP4_SSL(IMAP4):
         while 1:
             char = self.sslobj.read(1)
             line.append(char)
-            if char == "\n" or len(char)==0:
+            if char == b"\n" or len(char)==0:
                 if __debug__:
                     if Debug & D_SERVER:
                         print('S: %r' % b''.join(line))
@@ -478,7 +472,7 @@ class IMAP4_SSL(IMAP4):
 
     def send(self, data):
         '''Send data to remote.'''
-        # NB: socket.ssl needs a "sendall" method to match socket objects.
+        data = bytes(data,'utf-8')
         if __debug__:
             if Debug & D_CLIENT:
                 print('C: %r' % data)
