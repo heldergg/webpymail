@@ -46,7 +46,7 @@ if __name__ == '__main__':
     PASSWD = getpass.getpass('IMAP password for %s on %s: ' % (USER, host or "localhost"))
 
     # Login establish the connection to the server
-    M = imaplib2.imapp.IMAP4P( host )
+    M = imaplib2.imapp.IMAP4P(host, port=993, ssl=True)
 
     # Login to the server
     M.login(USER, PASSWD)

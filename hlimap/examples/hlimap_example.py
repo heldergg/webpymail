@@ -55,13 +55,13 @@ if __name__ == '__main__':
     PASSWD = getpass.getpass('IMAP password for %s on %s: ' % (USER, host or "localhost"))
 
     # Connect to the server
-    server = hlimap.ImapServer(host)
+    server = hlimap.ImapServer(host, port=993, ssl=True)
     server.login(USER, PASSWD)
 
     # Configure
     server.set_special_folders('INBOX', 'INBOX.Drafts', 'INBOX.Templates', 'INBOX.Trash')
 
-    # Forlder operations
+    # Folder operations
     base = server['INBOX']
     server.folder_iterator = 'iter_match'
     server.folder_tree.regex_filter = r'^INBOX\.N.*'
