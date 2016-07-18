@@ -62,9 +62,17 @@ if __name__ == '__main__':
     server.set_special_folders('INBOX', 'INBOX.Drafts', 'INBOX.Templates', 'INBOX.Trash')
 
     # Folder operations
-    base = server['INBOX']
     server.folder_iterator = 'iter_match'
     server.folder_tree.regex_filter = r'^INBOX\.N.*'
 
+    # List the folder tree
     for folder in server:
         print('##' * folder.level(), '%s' % folder)
+
+    # List the contents of a folder
+    INBOX = server['INBOX']
+    INBOX.message_list.paginator.msg_per_page = -1 # All messages
+    INBOX.message_list.paginator.msg_per_page = 50
+    for msg in INBOX:
+        print(msg.envelope['env_date'], msg.envelope['env_subject'])
+
