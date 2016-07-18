@@ -43,10 +43,8 @@ def getUnicodeHeader( header ):
     header string.
     '''
     if not header: return ''
-
     # Decode the header:
     header_list = []
-
     try:
         decoded_header = decode_header(header)
     except HeaderParseError:
@@ -56,23 +54,28 @@ def getUnicodeHeader( header ):
         except:
             # If unable to decode the header, return it unchanged
             return header
-
     for header in decoded_header:
         if not header[1]:
             codec = 'iso-8859-1'
         else:
             codec = header[1]
-
+        if isinstance(header[0], str):
+            # "decode_header" returns str if no charset is defined
+            # imapll converts the bytes string to str using utf-8 encoding
+            # if the server only returns ascii we should be OK in converting
+            # back to bytes this way:
+            txt = bytes(header[0],'utf-8')
+        else:
+            # "decode_header" returns bytes if a charset is found:
+            txt = header[0]
         try:
-            text = str(header[0], codec).encode('utf-8')
+            text = str(txt, codec)
         except:
             try:
-                text = str(header[0], 'iso-8859-1').encode('utf-8')
+                text = str(txt, 'iso-8859-1')
             except:
                 raise
-
         header_list.append(text)
-
     return ' '.join(header_list)
 
 def getUnicodeMailAddr( address_list ):

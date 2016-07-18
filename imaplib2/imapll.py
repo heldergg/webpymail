@@ -128,7 +128,7 @@ class IMAP4:
 
         self.tagged_commands = {}
         self.continuation_data = ContinuationRequests()
-        self._encoding = 'ascii'
+        self._encoding = 'utf-8'
 
         # Open the connection to the server
         self.open(host, port)
@@ -363,7 +363,7 @@ class IMAP4:
             # the line read and read the rest of the line
             size = int(lt.group('size'))
             literal = self.read(size)
-            line += CRLF + literal + self._get_line()
+            line += CRLF + literal + bytes(self._get_line(), self._encoding)
 
         return str(line, self._encoding)
 
@@ -454,8 +454,7 @@ class IMAP4_SSL(IMAP4):
             data = self.sslobj.read(size-read)
             read += len(data)
             chunks.append(data)
-
-        return ''.join(chunks)
+        return b''.join(chunks)
 
     def readline(self):
         '''Read line from remote.'''
@@ -472,7 +471,7 @@ class IMAP4_SSL(IMAP4):
 
     def send(self, data):
         '''Send data to remote.'''
-        data = bytes(data,'utf-8')
+        data = bytes(data,self._encoding)
         if __debug__:
             if Debug & D_CLIENT:
                 print('C: %r' % data)
