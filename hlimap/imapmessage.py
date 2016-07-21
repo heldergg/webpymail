@@ -188,7 +188,7 @@ class Paginator(object):
     def has_next_page(self):
         return self.current_page < self.max_page
 
-    def __next__(self):
+    def next(self):
         if self.has_next_page():
             return self.current_page + 1
         else:
@@ -485,7 +485,7 @@ class MessageList(object):
             if self.paginator.msg_per_page == -1:
                 message_list = self.flat_message_list
             else:
-                first_msg = ( self.paginator.current_page - 1 
+                first_msg = ( self.paginator.current_page - 1
                             ) * self.paginator.msg_per_page
                 last_message = first_msg + self.paginator.msg_per_page - 1
                 message_list = self.flat_message_list[first_msg:last_message+1]
@@ -522,7 +522,7 @@ class MessageList(object):
         if self.paginator.msg_per_page == -1:
             message_list = self.flat_message_list
         else:
-            first_msg = ( self.paginator.current_page - 1 
+            first_msg = ( self.paginator.current_page - 1
                         ) * self.paginator.msg_per_page
             last_message = first_msg + self.paginator.msg_per_page - 1
             message_list = self.flat_message_list[first_msg:last_message+1]
