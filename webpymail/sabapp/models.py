@@ -40,7 +40,7 @@ class AddressManager(models.Manager):
     def for_request(self, request):
         '''Addresses available for request'''
         host = request.session['host']
-        return super(AddressManager, self).get_query_set().filter(
+        return super(AddressManager, self).get_queryset().filter(
             Q( user__exact = request.user, imap_server__exact = host, ab_type__exact = 1 ) |
             Q( imap_server__exact = host, ab_type__exact = 2 ) |
             Q( ab_type__exact = 3 ) )
