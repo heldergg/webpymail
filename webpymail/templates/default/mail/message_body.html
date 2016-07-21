@@ -4,7 +4,7 @@
 {% load addresstags %}
 
 {% block headercontent %}
-<link href="{{ MEDIA_URL }}css/message.css" rel="stylesheet" type="text/css"></link>
+<link href="{{ STATIC_URL }}css/message.css" rel="stylesheet" type="text/css"></link>
 {% endblock %}
 
 {% block inpage_title %}{% trans "Message" %}{% endblock %}
@@ -38,10 +38,10 @@
     <td>{% for addr in message.envelope.env_from %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ MEDIA_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
+          <img src="{{ STATIC_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=message.uid %}">
-            <img src="{{ MEDIA_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
+            <img src="{{ STATIC_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
           </a>
         {% endifhasaddr %}
     {% endfor %}</td>
@@ -54,10 +54,10 @@
     <td>{% for addr in message.envelope.env_to %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ MEDIA_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
+          <img src="{{ STATIC_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=message.uid %}">
-            <img src="{{ MEDIA_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
+            <img src="{{ STATIC_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
           </a>
         {% endifhasaddr %}
     {% endfor %}</td>
@@ -70,10 +70,10 @@
     <td>{% for addr in message.envelope.env_cc %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ MEDIA_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
+          <img src="{{ STATIC_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=message.uid %}">
-            <img src="{{ MEDIA_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
+            <img src="{{ STATIC_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
           </a>
         {% endifhasaddr %}
     {% endfor %}</td>
@@ -86,10 +86,10 @@
     <td>{% for addr in message.envelope.env_bcc %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ MEDIA_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
+          <img src="{{ STATIC_URL }}img/star_yellow.png" width=16 height=16 alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=message.uid %}">
-            <img src="{{ MEDIA_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
+            <img src="{{ STATIC_URL }}img/star_empty.png" width=16 height=16 alt="Not bookmarked">
           </a>
         {% endifhasaddr %}
     {% endfor %}</td>

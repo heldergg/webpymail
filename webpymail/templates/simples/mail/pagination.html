@@ -2,25 +2,25 @@
 
 <div class="msglst_pagination">
 {% if paginator.is_not_first %}
-  <a href="{% url 'message_list' folder.url %}{% if query %}?{{ query }}{% endif %}"><img src="{{ MEDIA_URL }}simples/img/nav_first.png" alt="{% trans "First page" %}"></a>
+  <a href="{% url 'message_list' folder.url %}{% if query %}?{{ query }}{% endif %}"><img src="{{ STATIC_URL }}simples/img/nav_first.png" alt="{% trans "First page" %}"></a>
 {% else %}
-<img src="{{ MEDIA_URL }}simples/img/nav_first_gray.png" alt="{% trans "We are on the first page" %}">
+<img src="{{ STATIC_URL }}simples/img/nav_first_gray.png" alt="{% trans "We are on the first page" %}">
 {% endif %}
 {% if paginator.has_previous_page %}
-  <a href="{% url 'message_list' folder.url %}?page={{ paginator.previous }}{% if query %};{{ query }}{% endif %}"><img src="{{ MEDIA_URL }}simples/img/nav_prev.png" alt="{% trans "Previous page" %}">
+  <a href="{% url 'message_list' folder.url %}?page={{ paginator.previous }}{% if query %};{{ query }}{% endif %}"><img src="{{ STATIC_URL }}simples/img/nav_prev.png" alt="{% trans "Previous page" %}">
 </a>
 {% else %}
-  <img src="{{ MEDIA_URL }}simples/img/nav_prev_gray.png" alt="{% trans "We are on the first page" %}">
+  <img src="{{ STATIC_URL }}simples/img/nav_prev_gray.png" alt="{% trans "We are on the first page" %}">
 {% endif %}
 {% trans "Page" %} {{ paginator.current_page }} {% trans "of" %} {{ paginator.max_page }}
 {% if paginator.has_next_page %}
-<a href="{% url 'message_list' folder.url %}?page={{ paginator.next }}{% if query %};{{ query }}{% endif %}"><img src="{{ MEDIA_URL }}simples/img/nav_next.png" alt="{% trans "Next page" %}"></a>
+<a href="{% url 'message_list' folder.url %}?page={{ paginator.next }}{% if query %};{{ query }}{% endif %}"><img src="{{ STATIC_URL }}simples/img/nav_next.png" alt="{% trans "Next page" %}"></a>
 {% else %}
-  <img src="{{ MEDIA_URL }}simples/img/nav_next_gray.png" alt="{% trans "We are on the last page" %}">
+  <img src="{{ STATIC_URL }}simples/img/nav_next_gray.png" alt="{% trans "We are on the last page" %}">
 {% endif %}
 {% if paginator.is_not_last %}
-  <a href="{% url 'message_list' folder.url %}?page={{ paginator.last }}{% if query %};{{ query }}{% endif %}"><img src="{{ MEDIA_URL }}simples/img/nav_last.png" alt="{% trans "Last page" %}"></a>
+  <a href="{% url 'message_list' folder.url %}?page={{ paginator.last }}{% if query %};{{ query }}{% endif %}"><img src="{{ STATIC_URL }}simples/img/nav_last.png" alt="{% trans "Last page" %}"></a>
 {% else %}
-  <img src="{{ MEDIA_URL }}simples/img/nav_last_gray.png" alt="{% trans "We are on the last page" %}">
+  <img src="{{ STATIC_URL }}simples/img/nav_last_gray.png" alt="{% trans "We are on the last page" %}">
 {% endif %}
 </div>
