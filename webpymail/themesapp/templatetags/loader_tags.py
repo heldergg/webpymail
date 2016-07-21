@@ -155,7 +155,7 @@ class IncludeNode(LoaderNode):
             # Does this quack like a Template?
             if not callable(getattr(template, 'render', None)):
                 # If not, we'll try our cache, and get_template()
-                template_name = template
+                template_name = self.select_template(template,context).name
                 cache = context.render_context.setdefault(self.context_key, {})
                 template = cache.get(template_name)
                 if template is None:
