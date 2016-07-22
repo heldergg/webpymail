@@ -20,6 +20,7 @@
 {% endif %}
 
 <form enctype="multipart/form-data" method="post" action="{% url 'mailapp_send_message' %}">
+{% csrf_token %}
 
 <table class="msg_form" width="100%">
 {{ form }}

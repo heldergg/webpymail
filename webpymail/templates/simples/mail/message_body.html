@@ -112,7 +112,7 @@
 
 {% for part in message.bodystructure.serial_message %}
     {% if part.is_text and not part.is_attachment %} {# Show the message body #}
-      {% if part.test_plain %} 
+      {% if part.test_plain %}
         <pre>{% part_text message part "Plain" %}</pre>
       {% endif %}
     {% endif %}
@@ -223,6 +223,7 @@
 <div id="sub_menu">
     <div class="float_right">
       <form method="post" action="{% url 'mailapp-message' folder=message.folder.url uid=message.uid %}">
+        {% csrf_token %}
         {% if message.deleted %}
             <input type="submit" name="undelete" value="{% trans "Undelete" %}" />
         {% else %}

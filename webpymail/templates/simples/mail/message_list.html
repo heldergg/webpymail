@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block prev_section %}
-    <a class="boxed" href="{% url 'folder_list' %}">{% trans "Folder List" %}</a> 
+    <a class="boxed" href="{% url 'folder_list' %}">{% trans "Folder List" %}</a>
 {% endblock %}
 
 {% block cur_section %}
@@ -13,7 +13,7 @@
     <a class="boxed" href="{% url 'mailapp_send_message' %}">{% trans "Compose" %}</a>
 {% endblock %}
 
-{% block cur_section_f %} 
+{% block cur_section_f %}
 {{ address }}
 {% endblock %}
 
@@ -25,12 +25,13 @@
   {% if folder.have_messages %}
 
     <form method="post" action="{% url 'message_list' folder.url %}">
+    {% csrf_token %}
     <div class="message_actions">
       {{ form.action }}
       <input type="submit" name="apply" value="{% trans "Apply" %}"> |
       {{ form.folder }}
       <input type="submit" name="move" value="{% trans "Move" %}">
-      <input type="submit" name="copy" value="{% trans "Copy" %}"> 
+      <input type="submit" name="copy" value="{% trans "Copy" %}">
     </div>
 
     <div class="message_list">
