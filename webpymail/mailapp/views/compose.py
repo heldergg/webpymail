@@ -175,7 +175,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr = '', subjec
         new_data['saved_files'] = ','.join([ '%d' % Xi
             for Xi in uploaded_files.id_list()])
 
-        user_profile = request.user.get_profile()
+        user_profile = request.user.userprofile
 
         form = ComposeMailForm(new_data, request = request)
 

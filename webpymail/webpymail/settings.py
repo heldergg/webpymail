@@ -172,10 +172,6 @@ DATABASES = { 'default': { 'ENGINE': 'django.db.backends.sqlite3',
 ## Autentication and sessions
 ##
 
-# User profiles:
-
-AUTH_PROFILE_MODULE = 'mailapp.UserProfile'
-
 # SESSIONS
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
