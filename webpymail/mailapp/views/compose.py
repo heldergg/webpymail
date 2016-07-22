@@ -328,7 +328,7 @@ def reply_all_message(request, folder, uid):
     cc_addr =  join_address_list(message.envelope['env_to']+
         message.envelope['env_cc'])
 
-    subject = _('Re: ') + message.envelope['env_subject'].decode('utf-8')
+    subject = _('Re: ') + message.envelope['env_subject']
 
     # Extract the message text
     text = ''
