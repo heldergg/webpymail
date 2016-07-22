@@ -99,9 +99,9 @@ def mail_addr_str( mail_addr ):
         name.
     '''
     if mail_addr[0]:
-        return '"%s" <%s>' % ( mail_addr[0].decode('utf-8'), mail_addr[1].decode('utf-8') )
+        return '"%s" <%s>' % ( mail_addr[0], mail_addr[1] )
     else:
-        return '<%s>' % ( mail_addr[1].decode('utf-8') )
+        return '<%s>' % mail_addr[1]
 
 def mail_addr_name_str( mail_addr ):
     '''String representation of the person name in a mail address.
@@ -111,9 +111,9 @@ def mail_addr_name_str( mail_addr ):
     @return: '"Name"' or '<email address>' if there is no name.
     '''
     if mail_addr[0]:
-        return '%s' % ( mail_addr[0].decode('utf-8') )
+        return '%s' % mail_addr[0]
     else:
-        return '<%s>' % ( mail_addr[1].decode('utf-8') )
+        return '<%s>' % mail_addr[1]
 
 def quote_wrap_lines(text, quote_char = '>', width = 60):
     '''Wraps and quotes a message text.split

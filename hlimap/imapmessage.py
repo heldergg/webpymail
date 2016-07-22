@@ -572,8 +572,9 @@ class Message(object):
         elif part.body_fld_enc.upper() == 'QUOTED-PRINTABLE':
             text = quopri.decodestring(text)
 
-        if part.media.upper() == 'TEXT' and (decode_html or
-            part.media_subtype.upper() != 'HTML') and decode_text:
+        if (part.media.upper() == 'TEXT' and (decode_html or
+            part.media_subtype.upper() != 'HTML') and decode_text and
+            not isinstance(text, str)):
             try:
                 return str(text, part.charset())
             except (UnicodeDecodeError, LookupError):
@@ -585,7 +586,6 @@ class Message(object):
                     return str(text, 'iso-8859-1')
                 except:
                     raise
-
         return text
 
     def fetch(self, query ):

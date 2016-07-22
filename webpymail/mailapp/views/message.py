@@ -103,7 +103,7 @@ def message_source( request, folder, uid ):
     # Assume that we have a single byte encoded string, this is because there
     # can be several different files with different encodings within the same
     # message.
-    source = str(message.source(),'ISO-8859-1')
+    source = message.source()
 
     return render(request, 'mail/message_source.html',{'folder':folder,
         'message':message, 'source': source })

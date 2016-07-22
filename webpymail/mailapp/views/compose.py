@@ -297,7 +297,7 @@ def reply_message(request, folder, uid):
 
     # Extract the relevant headers
     to_addr = mail_addr_str(message.envelope['env_from'][0])
-    subject = _('Re: ') + str(message.envelope['env_subject'],'utf-8')
+    subject = _('Re: ') + message.envelope['env_subject']
 
     # Extract the message text
     text = ''
