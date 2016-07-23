@@ -66,14 +66,6 @@ class ImapBackend:
                 user.is_staff = False
                 user.is_superuser = False
                 user.save()
-
-                if settings.AUTH_PROFILE_MODULE:
-                    # Create the user profile
-                    app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
-                    model = apps.get_model(app_label, model_name)
-                    profile = model( user = user )
-                    profile.save()
-
             return user
         return None
 

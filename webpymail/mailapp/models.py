@@ -88,22 +88,8 @@ class UserProfile(models.Model):
     This record is automatically created on the user first login on the system.
     '''
     user = models.OneToOneField(User)
-
     default_identity = models.OneToOneField(UserIdentity, null=True)
-
     sent_folder = models.TextField(max_length=128, default='INBOX')
-
-    def save(self):
-        super(UserProfile, self).save()
-        # Create the default identity:
-        identity = UserIdentity( profile = self,
-            mail_address = self.user.username )
-        identity.save()
-
-        self.default_identity = identity
-
-        super(UserProfile, self).save()
-
 
     def __unicode__(self):
         return self.user.__unicode__()
