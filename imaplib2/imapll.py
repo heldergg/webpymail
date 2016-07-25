@@ -365,7 +365,10 @@ class IMAP4:
             literal = self.read(size)
             line += CRLF + literal + bytes(self._get_line(), self._encoding)
 
-        return str(line, self._encoding)
+        try:
+            return str(line, self._encoding)
+        except UnicodeDecodeError:
+            return str(line, 'latin-1')
 
     def _get_response(self):
         '''This method is called from within L{read_responses<read_responses>},
