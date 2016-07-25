@@ -219,75 +219,52 @@ class Paginator(object):
         return self.current_page > 1
 
 class Sorter(object):
-    '''This class profides the comparison function for sorting messages
+    '''This class provides the comparison function for sorting messages
     according to the provided sort program.
     '''
-    def __init__( self, message_dict, sort_program ):
+    def __init__(self, message_list, message_dict, sort_program):
         '''
+        @message_list - list to be sorted
         @message_dict - dict containing information about the messages in the
           form { MSG_UID: { msg info }, ... }
         @sort_program - tipple containing the sort program
         '''
+        self.message_list = message_list
         self.message_dict = message_dict
         self.sort_program = sort_program
 
-    def cmp_func( self, a, b, reverse ):
-        if reverse:
-            return cmp(b,a)
-        else:
-            return cmp(a,b)
+    def key_ARRIVAL(self, k):
+        return self.message_dict[k]['data'].internaldate
 
-    def cmp_ARRIVAL(self, a, b, reverse ):
-        a = self.message_dict[a]['data'].internaldate
-        b = self.message_dict[b]['data'].internaldate
-        return self.cmp_func( a, b, reverse )
+    def key_CC(self, k):
+        return ', '.join( self.message_dict[k]['data'].envelope.cc_short() )
 
-    def cmp_CC(self, a, b, reverse ):
-        a = ', '.join( self.message_dict[a]['data'].envelope.cc_short() )
-        b = ', '.join( self.message_dict[b]['data'].envelope.cc_short() )
-        return self.cmp_func( a, b, reverse )
+    def key_FROM(self, k):
+        return ', '.join( self.message_dict[k]['data'].envelope.from_short() )
 
-    def cmp_FROM(self, a, b, reverse ):
-        a = ', '.join( self.message_dict[a]['data'].envelope.from_short() )
-        b = ', '.join( self.message_dict[b]['data'].envelope.from_short() )
-        return self.cmp_func( a, b, reverse )
+    def key_DATE(self, k):
+        return self.message_dict[k]['data'].envelope['env_date']
 
-    def cmp_DATE(self, a, b, reverse ):
-        a = self.message_dict[a]['data'].envelope['env_date']
-        b = self.message_dict[b]['data'].envelope['env_date']
-        return self.cmp_func( a, b, reverse )
+    def key_SIZE(self, k):
+        return self.message_dict[k]['data'].size
 
-    def cmp_SIZE(self, a, b, reverse ):
-        a = self.message_dict[a]['data'].size
-        b = self.message_dict[b]['data'].size
-        return self.cmp_func( a, b, reverse )
+    def key_SUBJECT(self, k):
+        return self.message_dict[k]['data'].envelope['env_subject']
 
-    def cmp_SUBJECT(self, a, b, reverse ):
-        a = self.message_dict[a]['data'].envelope['env_subject']
-        b = self.message_dict[b]['data'].envelope['env_subject']
-        return self.cmp_func( a, b, reverse )
+    def key_TO(self, k):
+        return ', '.join( self.message_dict[k]['data'].envelope.to_short() )
 
-    def cmp_TO(self, a, b, reverse ):
-        a = ', '.join( self.message_dict[a]['data'].envelope.to_short() )
-        b = ', '.join( self.message_dict[b]['data'].envelope.to_short() )
-        return self.cmp_func( a, b, reverse )
-
-    def cmp_msg(self, a, b):
-        '''Read the sort program, compare using the first criteria, if a and b
-        are equal, uses the next criteria and so on. If the sort program is
-        completely consumed it returns the last comparison.
+    def run(self):
+        '''Read the sort program and executes it
         '''
-        for keyword in self.sort_program:
+        for keyword in reversed(self.sort_program):
             reverse = False
             if keyword[0] == '-':
                 reverse = True
                 keyword = keyword[1:]
-
-            cmp_meth = getattr(self, 'cmp_%s' % keyword )
-            cmp_val = cmp_meth( a, b, reverse )
-            if cmp_val in (1,-1):
-                return cmp_val
-        return cmp_val
+            key_meth = getattr(self, 'key_%s' % keyword )
+            self.message_list.sort(key=key_meth,reverse=reverse)
+        return self.message_list
 
 class MessageList(object):
     def __init__(self, server, folder, threaded=False):
@@ -476,9 +453,10 @@ class MessageList(object):
 
                 if self.show_style == SORTED:
                     # Sort the message list
-                    sorter = Sorter(self.message_dict, self.sort_program )
-                    message_list.sort(sorter.cmp_msg)
-
+                    message_list = Sorter(
+                            message_list,
+                            self.message_dict,
+                            self.sort_program).run()
                 self.flat_message_list = message_list
         else:
             # Get the message headers and construct
@@ -489,7 +467,6 @@ class MessageList(object):
                             ) * self.paginator.msg_per_page
                 last_message = first_msg + self.paginator.msg_per_page - 1
                 message_list = self.flat_message_list[first_msg:last_message+1]
-
             if message_list:
                 for msg_id,msg_info in self._imap.fetch(message_list,
                             '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE)'
