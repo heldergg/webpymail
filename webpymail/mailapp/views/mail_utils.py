@@ -203,7 +203,7 @@ def compose_rfc822( from_addr, to_addr, cc_addr, bcc_addr,
                 fp.close()
             elif (attachment.media() == 'MESSAGE' and
                     attachment.media_subtype() == 'RFC822'):
-                fp = open(filename, 'rb')
+                fp = open(filename, 'r')
                 attach =  MIMEMessage( message_from_file(fp) , 'RFC822' )
                 fp.close()
             else:
