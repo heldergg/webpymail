@@ -434,8 +434,8 @@ def forward_message_inline(request, folder, uid):
                 mime_type = '%s/%s' % (part.media, part.media_subtype),
                 content_desc = part.body_fld_desc if part.body_fld_desc else '',
                 content_id = part.body_fld_id if part.body_fld_id else '',
-                show_inline = False if part.body_fld_dsp[0].upper() == 'ATTACHMENT' else True,
-                sent = False )
+                show_inline = part.body_fld_dsp[0].upper() != 'ATTACHMENT',
+                sent = False)
             attachment.save()
             attach_list.append(attachment.id)
 
