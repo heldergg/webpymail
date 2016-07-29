@@ -1,4 +1,4 @@
-# WebPyMail
+![WebPyMail](https://raw.githubusercontent.com/heldergg/webpymail/master/logos/webpymail-logo-banner.png)
 
 WebPyMail is a project that seeks to create a fully featured, [Python 3](https://docs.python.org/3/) and [Django](https://www.djangoproject.com/) based, webmail client.
 
