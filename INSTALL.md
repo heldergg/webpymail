@@ -12,12 +12,6 @@ To test webpymail you need:
 # Installation
 
   * Get python working;
-  * Install the requirements:
-
-```
-pip install -r requirements.txt
-pip install -r requirements-optional.txt
-```
 
   * Choose a suitable folder and checkout webpymail source code:
 
@@ -25,31 +19,42 @@ pip install -r requirements-optional.txt
 git clone https://github.com/heldergg/webpymail.git
 ```
 
+  * Install the requirements:
+
+```
+$ cd webpymail/
+$ pip install -r requirements.txt
+$ pip install -r requirements-optional.txt
+```
+
   * Add the webpymail folder to your PYTHONPATH
 
 ```
-cd webpymail-source
-export PYTHONPATH=`pwd`:$PYTHONPATH
+$ export PYTHONPATH=`pwd`:$PYTHONPATH
 ```
 
-  * Create the `webpymail/webpymail/local_settings.py` file according to your needs.
+  * Do not change the Django's settings file. Instead create the `webpymail/webpymail/local_settings.py` file according to your needs. The defaults should be enough to get you going.
 
-  * Edit the file servers.conf in `webpymail/webpymail/config/servers.conf` and add your server. A server entry must be something like:
+```
+$ touch webpymail/webpymail/local_settings.py
+```
+
+  * Edit the file servers.conf in `webpymail/config/servers.conf` and add your server. A server entry is something like:
 
 ```
 [macavity]
-
 name = Macavity
 host = example.org
 port = 993
 ssl  = true
 ```
 
-  * Define a smtp server use a `[smtp]` section. This can be done in `webpymail/webpymail/config/defaults.conf` for a system wide configuration:
+By default gmail's IMAP server is defined.
+
+  * Define a smtp server use a `[smtp]` section. This can be done in `webpymail/config/defaults.conf` for a system wide configuration:
 
 ```
 [smtp]
-
 host   = smtp.example.com
 port   = 25
 user   = a_user
@@ -59,13 +64,16 @@ security = tls
 
 The security can be tls, ssl or none.
 
-If you wish to have different configurations by server you will have to define these settings in the specific server configuration file that lives in `webpymail/webpymail/config/servers/<hostname>.conf`. Take a look at the next section for information about configuration file precedences.
+If you wish to have different configurations by server you will have to define these settings in the specific server configuration file that lives in `webpymail/config/servers/<hostname>.conf`. Take a look at the next section for information about configuration file precedences.
+
+Gmail's imap SMTP server is defined in
+`webpymail/config/servers/imap.gmail.com.conf`.
 
   * Go to the webpymail django folder and create the database:
 
 ```
 $ cd webpymail
-$ python manage.py migrate
+$ python manage.py migrate --run-syncdb
 ```
 
   * Start Django's web server:
@@ -74,7 +82,7 @@ $ python manage.py migrate
 $ python3 manage.py runserver
 ```
 
-  * Finally you can access the webmail app, just go to: http://127.0.0.1:8000/ . Login with a valid user on the IMAP server.
+  * You can access the webmail app, just go to: http://127.0.0.1:8000/ . Login with a valid user on the IMAP server.
 
 # Configuration
 

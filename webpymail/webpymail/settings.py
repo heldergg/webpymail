@@ -139,6 +139,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
 )
 
@@ -212,7 +213,7 @@ TEXTAREACOLS = 60
 TEMPDIR = '/tmp' # Temporary dir to store the attachements
 
 # User configuration directories:
-CONFIGDIR = PROJECT_DIR
+CONFIGDIR = os.path.join(DJANGO_DIR,'config')
 USERCONFDIR = os.path.join(CONFIGDIR, 'users')
 SERVERCONFDIR = os.path.join(CONFIGDIR, 'servers')
 FACTORYCONF = os.path.join(CONFIGDIR,'factory.conf')
