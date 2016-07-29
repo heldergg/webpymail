@@ -83,7 +83,6 @@ class WebpymailConfig(SafeConfigParser):
                     identity[option] = self.get(section, option)
                 identity_list.append(identity)
         identity_list.sort(key=lambda identity: identity['id_number'])
-
         return identity_list
 
 def server_config():
@@ -91,9 +90,7 @@ def server_config():
     Returns the server(s) configuration.
     '''
     config = SafeConfigParser()
-
     config.read( settings.SERVERCONF )
-
     return config
 
 def server_list():
@@ -102,7 +99,6 @@ def server_list():
     server against which the users authenticate.
     '''
     config = server_config()
-
     server_list = []
     k = 0
     for server in config.sections():
@@ -113,5 +109,4 @@ def server_list():
             s[option] = config.get( server, option )
         server_list.append(s)
     server_list.sort(key=lambda server: server['name'])
-
     return server_list
