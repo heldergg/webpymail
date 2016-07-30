@@ -73,3 +73,7 @@ This is not a new project, this project was started in 2008 but, due to several
 reasons, the development was stopped for a while. It was hosted at [google
 code](https://code.google.com/archive/p/webpymail/).
 
+# License
+
+WebPyMail is licensed under the terms of the GNU General Public License Version
+3. See `COPYING` for details.
