@@ -302,7 +302,7 @@ def reply_message(request, folder, uid):
     # Extract the message text
     text = ''
     for part in message.bodystructure.serial_message():
-        if part.is_text() and part.test_plain():
+        if part.is_text() and part.is_plain():
             text += message.part( part )
 
     # Quote the message
@@ -333,7 +333,7 @@ def reply_all_message(request, folder, uid):
     # Extract the message text
     text = ''
     for part in message.bodystructure.serial_message():
-        if part.is_text() and part.test_plain():
+        if part.is_text() and part.is_plain():
             text += message.part( part )
 
     # Quote the message
@@ -403,7 +403,7 @@ def forward_message_inline(request, folder, uid):
     text += message_header( message )
 
     for part in message.bodystructure.serial_message():
-        if part.is_text() and part.test_plain() and not part.is_attachment():
+        if part.is_text() and part.is_plain() and not part.is_attachment():
             text += message.part( part )
 
         if part.is_encapsulated():

@@ -85,10 +85,10 @@ class BodyPart:
     def test_subtype(self, media_subtype):
         return self.media_subtype == media_subtype.upper()
 
-    def test_plain(self):
+    def is_plain(self):
         return self.test_subtype('PLAIN')
 
-    def test_html(self):
+    def is_html(self):
         return self.test_subtype('HTML')
 
     def is_encapsulated(self):
