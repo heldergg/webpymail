@@ -5,16 +5,16 @@ body {
 
 img { border: none; }
 
-h1 { 
-    font-size: 1.3em; 
+h1 {
+    font-size: 1.3em;
     color: white;
     background-color: black;
     margin: 0 0 0.3em 0;
     padding: 0.2em;
 }
 
-h2 { 
-    font-size: 1em; 
+h2 {
+    font-size: 1em;
     color: white;
     background-color: darkgray;
     margin: 0 0 0.3em 0;
@@ -23,10 +23,8 @@ h2 {
 
 #header_main {
     position: relative;
-    border: solid;
-    border-width: 1px;
-    border-color: darkgray;
-    padding-bottom: 0; }
+    padding-bottom: 0;
+    margin: 0 0 0.2em 0; }
 
 #header_right { float: right; }
 

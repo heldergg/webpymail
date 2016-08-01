@@ -43,7 +43,7 @@ div.message_info {
     text-align:right;
 }
 
-div.message_info p { 
+div.message_info p {
     padding: 0; margin: 0;}
 
 div.fields table {
@@ -66,6 +66,7 @@ div.attach_link table {
 
 #sub_menu {
     font-size: xx-smaller;
+    margin-bottom: 0.5em;
 }
 
 #sub_menu_right {
