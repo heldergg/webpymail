@@ -169,6 +169,19 @@ class Multipart ( BodyPart ):
         '''Only true for media='MULTIPART'  '''
         return True
 
+    def len(self):
+        '''Number of first level parts that constitute this part'''
+        return len(self.part_list)
+
+    def has_html(self):
+        '''True is one of the first level subparts if of media type
+        TEXT/HTML'''
+        for part in self.part_list:
+            if not part.is_multipart():
+                if part.is_text() and part.is_html():
+                    return True
+        return False
+
 class Single ( BodyPart ):
     def __init__(self, structure, prefix, level, next, parent = None):
         BodyPart.__init__( self, structure, prefix, level, next, parent )
@@ -210,6 +223,12 @@ class Single ( BodyPart ):
 
     def is_attachment(self):
         return bool(self.filename())
+
+    def is_last(self):
+        '''True if part is a last part in a multipart message'''
+        if not self.parent:
+            raise BODYERROR('This part has no parent')
+        return self.parent.part_list[-1] == self
 
     def __str__(self):
         return '<%s/%s>' % ( self.media, self.media_subtype )

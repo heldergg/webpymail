@@ -61,9 +61,12 @@ def show_message(request, folder, uid):
         except hlimap.imapmessage.MessageNotFound:
             return redirect('message_list', folder=folder.url() )
 
-    return render(request, 'mail/message_body.html',{'folder':folder,
+    return render(request, 'mail/message_body.html',{
+        'folder':folder,
         'message':message,
-        'inline_img': config.getboolean('message', 'show_images_inline')})
+        'show_images_inline': config.getboolean('message', 'show_images_inline'),
+        'show_html': config.getboolean('message', 'show_html'),
+        })
 
 @login_required
 def message_header( request, folder, uid ):
