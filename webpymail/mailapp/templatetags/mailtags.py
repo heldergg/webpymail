@@ -36,18 +36,16 @@ html_url_re = re.compile(r"(https?://(?:(?:(?:(?:(?:[a-zA-Z0-9][a-zA-Z0-9\-]*[a-
 
 # Tag to retrieve a message part from the server:
 
-@register.tag(name="part_text")
-def do_part_text(parser, token):
+@register.tag(name="show_part")
+def do_show_part(parser, token):
     try:
         # split_contents() knows not to split quoted strings.
-        tag_name, message, part, media_subtype = token.split_contents()
+        tag_name, message, part = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError("%r tag requires three args: message, part, media_subtype" \
+        raise template.TemplateSyntaxError("%r tag requires two args: message, part" \
             % token.contents.split()[0])
-    if not (media_subtype[0] == media_subtype[-1] and media_subtype[0] in ('"', "'")):
-        raise template.TemplateSyntaxError("%r tag's media_subtype argument should be in quotes" % tag_name)
 
-    return PartTextNode(message, part, media_subtype[1:-1])
+    return PartTextNode(message, part)
 
 def make_links( match ):
     url = match.groups()[0]
@@ -64,18 +62,15 @@ def wrap_lines(text, colnum = 72):
     return '\n'.join(new_list)
 
 class PartTextNode(template.Node):
-    def __init__(self, message, part, media_subtype):
-        self.media_subtype = media_subtype.upper()
+    def __init__(self, message, part ):
         self.message = message
         self.part = part
 
     def render(self, context):
         message =  resolve_variable(self.message, context)
         part = resolve_variable(self.part, context)
-
         text = escape(message.part( part ))
         text = html_url_re.sub( make_links, text)
         if part.media == 'TEXT' and part.media_subtype == 'PLAIN':
             text = wrap_lines( text, 80 )
-
         return text
