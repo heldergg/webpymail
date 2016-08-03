@@ -10,85 +10,84 @@ Bug reports and patches are welcome!
 
  * Same features as [squirrelmail](http://www.squirrelmail.org) without plugins (more or less):
     * **Folder list**:
-        * Subscribed folders; :+1:
-        * Expandable folder list; :+1:
-        * Read/Existing number of messsages; :+1:
-        * Refresh folder list;
-        * Subscribe/unsubscribe IMAP folders;
-        * Create, rename, move and delete IMAP folders;
+        * :white_check_mark: Subscribed folders;
+        * :white_check_mark: Expandable folder list;
+        * :white_check_mark: Read/Existing number of messsages;
+        * :white_medium_square: Refresh folder list;
+        * :white_medium_square: Subscribe/unsubscribe IMAP folders;
+        * :white_medium_square: Create, rename, move and delete IMAP folders;
     * **Message List**:
-        * Paginated message list; :+1:
-        * Identify the server capability and use the SORT or THREAD command, fall back to a simple view for simple servers; :+1:
-        * Move messages; :+1:
-        * Copy messages; :+1:
-        * Mark message read; :+1:
-        * Mark message unread; :+1:
-        * Mark message deleted; :+1:
-        * Mark message undeleted; :+1:
-        * Show all messages; :+1:
-        * Create interface for showing all messages (`page=all`);
+        * :white_check_mark: Paginated message list;
+        * :white_check_mark: Identify the server capability and use the SORT or THREAD command, fall back to a simple view for simple servers;
+        * :white_check_mark: Move messages;
+        * :white_check_mark: Copy messages;
+        * :white_check_mark: Mark message read;
+        * :white_check_mark: Mark message unread;
+        * :white_check_mark: Mark message deleted;
+        * :white_check_mark: Mark message undeleted;
+        * :white_check_mark: Show all messages;
+        * :white_medium_square: Create interface for showing all messages (`page=all`);
     * **Message view**:
-        * Show the message TEXT/PLAIN part; :+1:
-        * Show the message TEXT/HTML part; :+1:
-        * Ask the user for permission to see remote images (right now we have an all or nothing approach, system wide);
-        * Maintain a list of allowed senders to display remote messages;
-        * Show encapsulated messages; :+1:
-        * Show attachments; :+1:
-        * Reply, Reply All; :+1:
-        * Forward, forward inline; :+1:
-        * Identify URLs and render them as links :+1:
+        * :white_check_mark: Show the message TEXT/PLAIN part;
+        * :white_check_mark: Show the message TEXT/HTML part;
+        * :white_medium_square: Ask the user for permission to see remote images (right now we have an all or nothing approach, system wide);
+        * :white_medium_square: Maintain a list of allowed senders to display remote messages;
+        * :white_check_mark: Show encapsulated messages;
+        * :white_check_mark: Show attachments;
+        * :white_check_mark: Reply, Reply All;
+        * :white_check_mark: Forward, forward inline;
+        * :white_check_mark: Identify URLs and render them as links
         * Identify special message parts and display them accordingly:
-            * S/MIME Cryptographic Signature (APPLICATION/PKCS7-SIGNATURE);
+            * :white_medium_square: S/MIME Cryptographic Signature (APPLICATION/PKCS7-SIGNATURE);
             * MULTIPART/REPORT:
-                * MESSAGE/DELIVERY-STATUS;
+                * :white_medium_square: MESSAGE/DELIVERY-STATUS;
         * Display special in-line elements and display them accordingly:
-            * PGP signatures;
+            * :white_medium_square: PGP signatures;
     * **Compose view**:
-        * Compose message in plain text; :+1:
-        * Compose message in Markdown; :+1:
-        * Traditional message delivery status (`Disposition-Notification-To`);
+        * :white_check_mark: Compose message in plain text;
+        * :white_check_mark: Compose message in Markdown;
+        * :white_medium_square: Traditional message delivery status (`Disposition-Notification-To`);
         * Alternative message delivery status (is this ethical?):
-            * Create a web bug to know if the message was seen, from where and
-              when;
-            * Display this info to the user;
-        * Add attachments; :+1:
-        * Save message (as draft);
+            * :white_medium_square: Create a web bug to know if the message was seen, from where and when;
+            * :white_medium_square: Display this info to the user;
+        * :white_check_mark: Add attachments;
+        * :white_medium_square: Save message (as draft);
     * **Address book**:
-        * List and manage contacts (create, edit and delete); :+1:
-        * Create messages using the contacts; :+1:
-        * User, server and site level address books, the user can only create/edit/delete on the user level; :+1:
-        * Permissions for users to change the address books at these levels;
-        * Interface to give permissions;
-        * Auto save new mail addresses;
+        * :white_check_mark: List and manage contacts (create, edit and delete);
+        * :white_check_mark: Create messages using the contacts;
+        * :white_check_mark: User, server and site level address books, the user can only create/edit/delete on the user level;
+        * :white_medium_square: Permissions for users to change the address books at these levels;
+        * :white_medium_square: Interface to give permissions;
+        * :white_medium_square: Auto save new mail addresses;
 
 * Other features:
-    * Multi server support; :+1:
+    * :white_check_mark: Multi server support;
     * Server admin interface (not Django's admin app):
-        * Edit the configuration files;
-        * Edit user permissions (address book permissions);
-    * IMAP authentication back end:
-    * Server list edited using the admin app; :+1:
-    * Auto user creation if successfully authenticated by the IMAP server; :+1:
-    * Authenticates always against the server, so no passwords on the db; :+1:
-    * BODYSTRUCTURE parser; :+1:
+        * :white_medium_square: Edit the configuration files;
+        * :white_medium_square: Edit user permissions (address book permissions);
+    * :white_check_mark: IMAP authentication back end;
+    * :white_check_mark: Server list edited using the admin app;
+    * :white_check_mark: Auto user creation if successfully authenticated by the IMAP server;
+    * :white_check_mark: Authenticates always against the server, so no passwords on the db;
+    * :white_check_mark: BODYSTRUCTURE parser;
 
 ### Possible features
 
 * SOHO features:
-    * System wide signatures, enforceable by the webmaster;
-    * Ability to disable user signatures;
-    * Common pool of harvested mail addresses from all the accounts, if the user chooses to make the address public every user will have access to the mail address;
-    * Support for LDAP address books (read and write);
-    * Support carddav address books (read and write);
-    * Support for IMAP ACLs, so that a user can share his folders;
+    * :white_medium_square: System wide signatures, enforceable by the webmaster;
+    * :white_medium_square: Ability to disable user signatures;
+    * :white_medium_square: Common pool of harvested mail addresses from all the accounts, if the user chooses to make the address public every user will have access to the mail address;
+    * :white_medium_square: Support for LDAP address books (read and write);
+    * :white_medium_square: Support carddav address books (read and write);
+    * :white_medium_square: Support for IMAP ACLs, so that a user can share his folders;
     * Message templates:
-        * Message templates (including custom css);
-        * Message templates with forms;
-        * Allow or disallow message templates for the user;
-        * Force a message template to a user;
-    * Database index of messages with the ENVELOPE and BODYSTRUCTURE info;
-    * Sieve filter interface;
-    * Permit plugins.
+        * :white_medium_square: Message templates (including custom css);
+        * :white_medium_square: Message templates with forms;
+        * :white_medium_square: Allow or disallow message templates for the user;
+        * :white_medium_square: Force a message template to a user;
+    * :white_medium_square: Database index of messages with the ENVELOPE and BODYSTRUCTURE info;
+    * :white_medium_square: Sieve filter interface;
+    * :white_medium_square: Permit plugins.
 
 # History
 
