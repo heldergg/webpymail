@@ -42,25 +42,22 @@
   {% for part in message.bodystructure.serial_message %}
       {# Text message part #}
       {% if part.parent %}
+        {% if part.parent.is_alternative %}
+          {% if not part.parent.has_html %}
+            {% include "mail/show_text_media.html" %}
+          {% else %}
+            {% if part.is_html and show_html %}
+              {% include "mail/show_text_media.html" %}
+            {% endif %}
+            {% if part.is_plain and not show_html %}
+              {% include "mail/show_text_media.html" %}
+            {% endif %}
+          {% endif %}
+        {% else %}
+          {% include "mail/show_text_media.html" %}
+        {% endif %}
       {% else %}
-        {# HTML part #}
-        {% if part.is_text and not part.is_attachment and part.
-      {% endif %}
-
-
-
-
-      {% if part.is_text and not part.is_attachment %}
-          {% if part.is_plain %}
-              <pre>{% show_part message part %}</pre>
-          {% endif %}
-          {% if part.is_html %}
-          <div class="attach_link">
-              <a href="/mail/FOLDER_{{ folder.url }}/{{ message.uid }}/{{ part.part_number }}/">
-              {% trans "View HTML message" %}</a> -
-              {% trans "Please note that viewing html messages may pose a security risk." %}
-          </div>
-          {% endif %}
+        {% include "mail/show_text_media.html" %}
       {% endif %}
 
       {# Encapsulated message #}

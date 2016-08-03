@@ -1,0 +1,12 @@
+{% load mailtags %}
+
+{% if part.is_text and not part.is_attachment %}
+  {% if part.is_html and show_html %} {# HTML part #}
+    {% autoescape off %}
+    {% show_part message part %}
+    {% endautoescape %}
+  {% endif %}
+  {% if part.is_plain %} {# Text part #}
+    <pre>{% show_part message part %}</pre>
+  {% endif %}
+{% endif %}
