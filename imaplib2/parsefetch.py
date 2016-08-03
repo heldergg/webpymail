@@ -169,6 +169,10 @@ class Multipart ( BodyPart ):
         '''Only true for media='MULTIPART'  '''
         return True
 
+    def is_alternative(self):
+        print("#"*80)
+        return self.test_subtype('ALTERNATIVE')
+
     def len(self):
         '''Number of first level parts that constitute this part'''
         return len(self.part_list)
