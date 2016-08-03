@@ -14,7 +14,6 @@
 <a href="{% url 'folder_list' %}">{% trans "Folder List" %}</a>&nbsp;&nbsp;{% endblock %}
 
 {% block contents %}
-
 <div class="message">
 <div class="subject">
 {% trans "Message Structure" %}
@@ -32,7 +31,7 @@
   </tr>
 {% for part in message.bodystructure.serial_message %}
   <tr>
-    <td>{{ part.part_number }}</td>
+    <td>{% if part.part_number %}{{ part.part_number }}{% endif %}</td>
     <td>{{ part.media }}/{{ part.media_subtype }}</td>
     <td>{{ part.is_text }}</td>
     <td>{{ part.is_basic }}</td>
