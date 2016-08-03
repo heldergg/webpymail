@@ -535,11 +535,11 @@ class Message(object):
         return self.__bodystructure
     bodystructure = property(get_bodystructure)
 
-    def part(self, part, decode_html = False, decode_text = True ):
+    def part(self, part, decode_text = True ):
         '''Get a part from the server.
 
-        The TEXT/PLAIN parts are decoded according to the BODYSTRUCTURE
-        information. The TEXT/HTML parts aren't decoded by default.
+        The TEXT/PLAIN and TEXT/HTML parts are decoded according to the
+        BODYSTRUCTURE information.
         '''
         query = part.query()
         text = self.fetch(query)
@@ -549,8 +549,9 @@ class Message(object):
         elif part.body_fld_enc.upper() == 'QUOTED-PRINTABLE':
             text = quopri.decodestring(text)
 
-        if (part.media.upper() == 'TEXT' and (decode_html or
-            part.media_subtype.upper() != 'HTML') and decode_text and
+        if (part.media.upper() == 'TEXT' and
+            part.media_subtype.upper() in  ('HTML', 'PLAIN') and
+            decode_text and
             not isinstance(text, str)):
             try:
                 return str(text, part.charset())
