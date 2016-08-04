@@ -28,15 +28,19 @@
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.views.generic import TemplateView
 
 # Local Imports
 from mailapp.views.message import index, not_implemented
+from webpymail.views import about
 
 admin.autodiscover()
 
 urlpatterns = [
         # Root:
         url(r'^$', index),
+        # About:
+        url(r'^about/', about, name='about'),
         # Mail Interface:
         url(r'^mail/', include('mailapp.urls')),
         # Address book:
