@@ -27,14 +27,11 @@
 # Global imports:
 from django.conf import settings
 from django.conf.urls import include, url
-from django.contrib import admin
 from django.views.generic import TemplateView
 
 # Local Imports
 from mailapp.views.message import index, not_implemented
 from webpymail.views import about
-
-admin.autodiscover()
 
 urlpatterns = [
         # Root:
@@ -47,8 +44,6 @@ urlpatterns = [
         url(r'^ab/', include('sabapp.urls')),
         # Authentication interface:
         url(r'^auth/', include('wpmauth.urls')),
-        # Admin Interface:
-        url(r'^admin/', include(admin.site.urls)),
         # Generic:
         url(r'^not_implemented/$', not_implemented, name='not_implemented'),
         ]
