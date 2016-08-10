@@ -35,13 +35,13 @@ from .sexp import scan_sexp
 class BODYERROR(Exception) : pass
 
 class BodyPart:
-    def __init__( self, structure, prefix, level, next, parent = None ):
+    def __init__(self, structure, prefix, level, next_part, parent = None):
         self.parent = parent
 
     def query(self):
         raise BODYERROR('This part is not numbered')
 
-    def load_parts( self, structure, prefix ):
+    def load_parts(self, structure, prefix):
         raise BODYERROR('This part is not numbered')
 
     def fetch_query(self):
@@ -60,7 +60,7 @@ class BodyPart:
         '''Returns the message structure as a one dimension list'''
         return [self]
 
-    def find_part(self, part_number ):
+    def find_part(self, part_number):
         '''Returns a part'''
         for part in self.serial_message():
             if part.part_number == part_number:
@@ -79,7 +79,7 @@ class BodyPart:
         '''Only true for media='MULTIPART'  '''
         return False
 
-    def test_media(self, media ):
+    def test_media(self, media):
         return self.media == media.upper()
 
     def test_subtype(self, media_subtype):
@@ -99,31 +99,31 @@ class BodyPart:
         '''Only valid for single parts that are attachments'''
         return self.is_basic()
 
-class Multipart ( BodyPart ):
-    def __init__( self, structure, prefix, level, next, parent = None  ):
-        BodyPart.__init__( self, structure, prefix, level, next, parent )
+class Multipart (BodyPart):
+    def __init__(self, structure, prefix, level, next_part, parent = None ):
+        BodyPart.__init__(self, structure, prefix, level, next_part, parent)
 
-        if next: # has part number
+        if next_part: # has part number
             self.part_number = '%s%d' % (prefix, level)
-            prefix = '%s%d.' % ( prefix, level )
+            prefix = '%s%d.' % (prefix, level)
         else:
-            next = True
+            next_part = True
             self.part_number = None
 
         self.media = 'MULTIPART'
         self.part_list = []
         self.body_ext_mpart = []
-        self.load_parts(structure, prefix, level, next )
+        self.load_parts(structure, prefix, level, next_part)
 
-    def load_parts( self, structure, prefix, level, next ):
+    def load_parts(self, structure, prefix, level, next_part):
         is_subpart = True
         level = 1
         for part in structure:
             if is_subpart:
-                if isinstance( part, list ):
+                if isinstance(part, list):
                     # We have one more subpart
-                    self.part_list.append( load_structure( part, prefix, level,
-                        next, self))
+                    self.part_list.append(load_structure(part, prefix, level,
+                        next_part, self))
                     level += 1
                 else:
                     # The subpart list ended, the present field is the media
@@ -132,17 +132,17 @@ class Multipart ( BodyPart ):
                     self.media_subtype = part
             else:
                 # We have body_ext_mpart, for now we ignore this
-                self.body_ext_mpart.append( part )
+                self.body_ext_mpart.append(part)
 
     def __str__(self):
         return '<MULTIPART/%s>' % self.media_subtype
 
-    def represent( self ):
+    def represent(self):
         try:
-            rpr = '%-10s %s/%s\n' % ( self.part_number, self.media,
-                self.media_subtype )
+            rpr = '%-10s %s/%s\n' % (self.part_number, self.media,
+                self.media_subtype)
         except:
-            rpr = '%-10s %s/%s\n' % ( ' ', self.media, self.media_subtype )
+            rpr = '%-10s %s/%s\n' % (' ', self.media, self.media_subtype)
 
         for part in self.part_list:
             rpr += part.represent()
@@ -186,9 +186,9 @@ class Multipart ( BodyPart ):
                     return True
         return False
 
-class Single ( BodyPart ):
-    def __init__(self, structure, prefix, level, next, parent = None):
-        BodyPart.__init__( self, structure, prefix, level, next, parent )
+class Single (BodyPart):
+    def __init__(self, structure, prefix, level, next_part, parent = None):
+        BodyPart.__init__(self, structure, prefix, level, next_part, parent)
         self.media = structure[0].upper()
         self.media_subtype = structure[1].upper()
         self.body_fld_id = structure[3]
@@ -222,8 +222,8 @@ class Single ( BodyPart ):
             return None
 
     def represent(self):
-        return '%-10s %s/%s\n' % ( self.part_number, self.media,
-            self.media_subtype )
+        return '%-10s %s/%s\n' % (self.part_number, self.media,
+            self.media_subtype)
 
     def is_attachment(self):
         return bool(self.filename())
@@ -235,21 +235,21 @@ class Single ( BodyPart ):
         return self.parent.part_list[-1] == self
 
     def __str__(self):
-        return '<%s/%s>' % ( self.media, self.media_subtype )
+        return '<%s/%s>' % (self.media, self.media_subtype)
 
 
-class Message( Single ):
-    def __init__( self, structure, prefix, level, next, parent = None ):
-        Single.__init__(self, structure, prefix, level, next, parent )
+class Message(Single):
+    def __init__(self, structure, prefix, level, next_part, parent = None):
+        Single.__init__(self, structure, prefix, level, next_part, parent)
 
-        prefix = '%s%d.' % ( prefix, level )
-        if isinstance( structure[8], list ):
+        prefix = '%s%d.' % (prefix, level)
+        if isinstance(structure[8], list):
             # Embeded message is a multipart
-            next = False
+            next_part = False
 
         # Rest
-        self.envelope = Envelope( structure[7] )
-        self.body =  load_structure( structure[8], prefix, 1, next, self )
+        self.envelope = Envelope(structure[7])
+        self.body =  load_structure(structure[8], prefix, 1, next_part, self)
         self.body_fld_lines = structure[9]
 
         if len(structure)>10:
@@ -276,12 +276,12 @@ class Message( Single ):
         self.start = not self.start
         return tmp
 
-class SingleTextBasic ( Single ):
-    def __init__( self, structure, prefix, level, next, parent = None ):
-        Single.__init__( self, structure, prefix, level, next, parent )
+class SingleTextBasic (Single):
+    def __init__(self, structure, prefix, level, next_part, parent = None):
+        Single.__init__(self, structure, prefix, level, next_part, parent)
 
     def __str__(self):
-        return '<%s/%s>' % ( self.media, self.media_subtype )
+        return '<%s/%s>' % (self.media, self.media_subtype)
 
     def query(self):
         return 'BODY[%s]' % self.part_number
@@ -302,7 +302,7 @@ class SingleTextBasic ( Single ):
         self.body_fld_loc = None
         self.body_extension = None
 
-        if isinstance( self.body_ext_1part, list ):
+        if isinstance(self.body_ext_1part, list):
             self.body_fld_md5 = self.body_ext_1part[0]
 
             if len(self.body_ext_1part) > 1:
@@ -323,9 +323,9 @@ class SingleTextBasic ( Single ):
             return Single.is_attachment(self)
 
 
-class SingleText ( SingleTextBasic ):
-    def __init__(self, structure, prefix, level, next, parent = None):
-        SingleTextBasic.__init__(self, structure, prefix, level, next, parent )
+class SingleText (SingleTextBasic):
+    def __init__(self, structure, prefix, level, next_part, parent = None):
+        SingleTextBasic.__init__(self, structure, prefix, level, next_part, parent)
         self.body_fld_lines = structure[7]
 
         self.body_ext_1part = None
@@ -336,9 +336,9 @@ class SingleText ( SingleTextBasic ):
     def is_text(self):
         return True
 
-class SingleBasic ( SingleTextBasic ):
-    def __init__(self, structure, prefix, level, next, parent = None):
-        SingleTextBasic.__init__(self, structure, prefix, level, next, parent )
+class SingleBasic (SingleTextBasic):
+    def __init__(self, structure, prefix, level, next_part, parent = None):
+        SingleTextBasic.__init__(self, structure, prefix, level, next_part, parent)
 
         self.body_ext_1part = None
         if len(structure)>7:
@@ -349,23 +349,23 @@ class SingleBasic ( SingleTextBasic ):
         '''Only true for media!='TEXT' '''
         return True
 
-def load_structure(structure, prefix = '',level = 1,next = False,parent = None):
-    if isinstance( structure[0], list ):
+def load_structure(structure, prefix='', level=1, next_part=False, parent = None):
+    if isinstance(structure[0], list):
         # It's a multipart
-        return Multipart(structure, prefix, level, next, parent)
+        return Multipart(structure, prefix, level, next_part, parent)
 
     media = structure[0].upper()
     media_subtype = structure[1].upper()
 
     if media == 'MESSAGE' and media_subtype == 'RFC822':
-        return Message( structure, prefix, level, next, parent )
+        return Message(structure, prefix, level, next_part, parent)
 
     if media == 'TEXT':
-        return SingleText( structure, prefix, level, next, parent )
+        return SingleText(structure, prefix, level, next_part, parent)
 
-    return SingleBasic( structure, prefix, level, next, parent )
+    return SingleBasic(structure, prefix, level, next_part, parent)
 
-def envelope( structure ):
+def envelope(structure):
     return { 'env_date': envelopedate2datetime(structure[0]),
             'env_subject': getUnicodeHeader(structure[1]),
             'env_from': getUnicodeMailAddr(structure[2]),
@@ -377,7 +377,7 @@ def envelope( structure ):
             'env_in_reply_to': structure[8],
             'env_message_id': structure[9]  }
 
-def real_name( address ):
+def real_name(address):
     '''From an address returns the person real name or if this is empty the
     email address'''
     if address[0]:
@@ -385,9 +385,9 @@ def real_name( address ):
     else:
         return address[1]
 
-class Envelope( dict ):
-    def __init__( self, env ):
-        dict.__init__(self, envelope( env ) )
+class Envelope(dict):
+    def __init__(self, env):
+        dict.__init__(self, envelope(env))
 
     def short_mail_list(self, mail_list):
         for addr in mail_list:
@@ -405,7 +405,7 @@ class Envelope( dict ):
         '''Returns a list with the first and last names'''
         return self.short_mail_list(self['env_cc'])
 
-class FetchParser( dict ):
+class FetchParser(dict):
     '''This class parses the fetch response (already as a python dict) and
     further processes.
     '''
@@ -415,203 +415,23 @@ class FetchParser( dict ):
         it = iter(scan_sexp(result)[0])
         result = dict(list(zip(it,it)))
 
-        dict.__init__(self, result )
+        dict.__init__(self, result)
 
         for data_item in self:
             method_name = data_item + '_data_item'
-            meth = getattr(self, method_name, self.default_data_item )
-            self[data_item] = meth( self[data_item] )
+            meth = getattr(self, method_name, self.default_data_item)
+            self[data_item] = meth(self[data_item])
 
     def default_data_item(self, data_item):
         return data_item
 
-    def BODY_data_item(self, body ):
+    def BODY_data_item(self, body):
         return load_structure(body)
 
     BODYSTRUCTURE_data_item = BODY_data_item
 
-    def INTERNALDATE_data_item(self, arrival ):
+    def INTERNALDATE_data_item(self, arrival):
         return internaldate2datetime(arrival)
 
-    def ENVELOPE_data_item(self, envelope ):
+    def ENVELOPE_data_item(self, envelope):
         return Envelope(envelope)
-
-if __name__ == '__main__':
-    from imaplib2.imapp import IMAP4P
-
-    import getopt, getpass, sys, pprint
-
-    try:
-        optlist, args = getopt.getopt(sys.argv[1:], 'd:s:')
-    except getopt.error as val:
-        optlist, args = (), ()
-
-    if not args: args = ('',)
-
-    host = args[0]
-
-    USER = getpass.getuser()
-    PASSWD = getpass.getpass("IMAP password for %s on %s: " % (USER, host or "localhost"))
-
-    M = IMAP4P( host )
-
-    M.login(USER,PASSWD)
-
-    M.select('INBOX')
-    msg_list = M.search_uid('(ALL)')
-
-    msg_list = [31911]
-
-    bodies = M.fetch_uid( msg_list, '(BODYSTRUCTURE)' )
-    M.logout()
-
-    for uid in msg_list:
-        print('\n'*2)
-        print('UID:', uid)
-        pprint.pprint(bodies[uid])
-        print()
-        for part in walk(bodies[uid]['BODYSTRUCTURE']):
-            if 'part_number' in part:
-                print('%-10s %s/%s' % ( part['part_number'], part['media'],
-                    part['media_subtype'] ))
-            else:
-                print('%10s %s/%s' % (' ', part['media'],
-                    part['media_subtype'] ))
-
-
-################################################################################
-# The following funtions were used to understand the body structure structure  #
-# and to see how the numbering algorithm for the messages works. They're kept  #
-# here for historical and reference resons.                                    #
-################################################################################
-
-def body_parts( structure ):
-    '''This function analyses a s-exp body structure as returned by the server
-    and creates a python structure.
-
-    @param structure: a BODY or BODYSTRUCTURE fetch response formated as a
-    python list (as resturnd by L{scan_sexp<imaplib2.sexp.scan_sexp>}).
-    @type structure: list
-
-    @return: a dict with the parsed structure.
-    '''
-
-    if isinstance(structure[0], list):
-        # It's a multipart
-
-        multipart = { 'media': 'MULTIPART', 'part_list': [] }
-        is_subpart = True
-        for part in structure:
-            if is_subpart:
-                if isinstance(part, list):
-                    # We have one more subpart
-                    multipart['part_list'].append( body_parts( part ) )
-                else:
-                    # The subpart list ended, the present field is the
-                    # media_subtype
-                    is_subpart = False
-                    multipart['media_subtype'] = part
-            else:
-                # We have body_ext_mpart, for now we ignore this
-                if 'body_ext_mpart' in multipart:
-                    multipart['body_ext_mpart'].append(part)
-                else:
-                    multipart['body_ext_mpart'] = []
-                    multipart['body_ext_mpart'].append(part)
-
-        return multipart
-
-    # We are parsing a message part
-    part = { 'media': structure[0],
-             'media_subtype': structure[1],
-             'body_fld_id': structure[3],
-             'body_fld_desc': structure[4],
-             'body_fld_enc': structure[5],
-             'body_fld_octets': structure[6] }
-
-    # body_fld_param = structure[2]
-    # if body_fld_param is NIL, then there are no param
-    if structure[2]:
-        it = iter(structure[2])
-        for name,value in zip(it,it):
-            if name:
-                part[name] = value
-
-    as_ext = False
-
-    if structure[0] == 'TEXT':
-        # body type text
-        part['body_fld_lines'] = structure[7]
-        if len(structure) > 8:
-            structure = structure[8:]
-            as_ext = True
-
-    elif structure[0] == 'MESSAGE' and \
-         structure[1] == 'RFC822':
-        # body type message
-        part['envelope'] = Envelope( structure[7] )
-        part['body'] = body_parts( structure[8] )
-        part['body_fld_lines'] = structure[9]
-        if len(structure) > 10:
-            structure = structure[10:]
-            as_ext = True
-
-    else:
-        if len(structure) > 7:
-            structure = structure[7:]
-            as_ext = True
-
-    if as_ext:
-        # has a body_ext_1part, we ignore this for the moment
-        part['body_ext_1part'] = structure
-
-    return part
-
-def calc_part_numbers( body, prefix = '', level = 1, next = False ):
-    if body['media'] == 'MULTIPART':
-        if next: # has part number
-            body['part_number'] = '%s%d' % (prefix, level)
-            prefix = '%s%d.' % ( prefix, level )
-        else:
-            next = True
-
-        for part in body['part_list']:
-            calc_part_numbers(part, prefix, level, next)
-            level += 1
-    else:
-        body['part_number'] = '%s%d' % (prefix, level)
-        if body['media'] == 'MESSAGE' and body['media_subtype'] == 'RFC822':
-            prefix = '%s%d.' % ( prefix, level )
-            if body['body']['media'] == 'MULTIPART':
-                next = False
-            calc_part_numbers(body['body'], prefix, 1, next)
-
-    return body
-
-def walk( body ):
-    '''Iteracts through the message parts
-    '''
-    if body['media'] == 'MULTIPART':
-        yield body
-        for part in body['part_list']:
-            for p in walk(part):
-                yield p
-
-    else:
-        if body['media'] == 'MESSAGE' and body['media_subtype'] == 'RFC822':
-            yield body
-            for p in walk( body['body'] ):
-                yield p
-        else:
-            yield body
-
-def represent_body( structure ):
-    print('Recursive')
-    body = calc_part_numbers( body_parts ( structure ) )
-    for part in walk(body):
-        if 'part_number' in part:
-            print('%-10s %s/%s' % ( part['part_number'], part['media'],
-                part['media_subtype'] ))
-        else:
-            print('%-10s %s/%s' % ( 'None', part['media'],
-                part['media_subtype'] ))
