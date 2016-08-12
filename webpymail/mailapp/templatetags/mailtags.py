@@ -113,5 +113,4 @@ class PartTextNode(template.Node):
             text = self.sanitize_text(text)
         elif part.is_html():
             text = self.sanitize_html(text)
-        print([text])
         return text
