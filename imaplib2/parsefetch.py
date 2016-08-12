@@ -99,17 +99,15 @@ class BodyPart:
         '''Only valid for single parts that are attachments'''
         return self.is_basic()
 
-class Multipart (BodyPart):
-    def __init__(self, structure, prefix, level, next_part, parent = None ):
+class Multipart(BodyPart):
+    def __init__(self, structure, prefix, level, next_part, parent=None):
         BodyPart.__init__(self, structure, prefix, level, next_part, parent)
-
         if next_part: # has part number
             self.part_number = '%s%d' % (prefix, level)
             prefix = '%s%d.' % (prefix, level)
         else:
             next_part = True
             self.part_number = None
-
         self.media = 'MULTIPART'
         self.part_list = []
         self.body_ext_mpart = []
@@ -162,7 +160,6 @@ class Multipart (BodyPart):
         tmp_partlist = [self]
         for part in self.part_list:
             tmp_partlist += part.serial_message()
-
         return tmp_partlist
 
     def is_multipart(self):
@@ -170,7 +167,6 @@ class Multipart (BodyPart):
         return True
 
     def is_alternative(self):
-        print("#"*80)
         return self.test_subtype('ALTERNATIVE')
 
     def len(self):
@@ -184,6 +180,8 @@ class Multipart (BodyPart):
             if not part.is_multipart():
                 if part.is_text() and part.is_html():
                     return True
+            else:
+                return part.has_html()
         return False
 
 class Single (BodyPart):
@@ -236,7 +234,6 @@ class Single (BodyPart):
 
     def __str__(self):
         return '<%s/%s>' % (self.media, self.media_subtype)
-
 
 class Message(Single):
     def __init__(self, structure, prefix, level, next_part, parent = None):
@@ -321,7 +318,6 @@ class SingleTextBasic (Single):
             return self.body_fld_dsp[0].upper() == 'ATTACHMENT'
         else:
             return Single.is_attachment(self)
-
 
 class SingleText (SingleTextBasic):
     def __init__(self, structure, prefix, level, next_part, parent = None):
