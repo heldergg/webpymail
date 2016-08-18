@@ -5,6 +5,7 @@
     {% autoescape off %}
     {% show_part message part %}
     {% endautoescape %}
+    <div style="clear:both;"></div>
   {% endif %}
   {% if part.is_plain %} {# Text part #}
     <pre>{% show_part message part %}</pre>
