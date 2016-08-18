@@ -26,11 +26,16 @@ from django import template
 from django.template import resolve_variable
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import escape
+from django.core.urlresolvers import reverse
 
 register = template.Library()
 
 import bleach
 import re, textwrap
+
+##
+## HTML sanitization
+##
 
 # Bleach configuration
 TAGS = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'br', 'code',
@@ -53,13 +58,67 @@ ATTRS = {'*': ['class', 'id', 'style', ],
          'a': ['href', 'title'],
          'abbr': ['title'],
          'acronym': ['title'],
-         'img': ['alt','title', 'width', 'height'],
+         'img': ['src','alt','title', 'width', 'height'],
          'table': ['width', 'align', 'cellpadding', 'cellspacing',
                    'border'],
          'td': ['width', 'valign'],
          'th': ['width', 'valign'],
          }
 PROTOCOLS = ['http', 'https', 'mailto'] # Not available in bleach 1.4.3
+
+
+class HtmlSanitize:
+    def __init__(self, message, part, external_images):
+        self.message = message
+        self.part = part
+        self.external_images = external_images
+        #self.external_images = False
+
+    def get_html(self):
+        return self.message.part(self.part)
+
+    def bleach_html(self, html):
+        print(html)
+        html = bleach.clean(html,
+                tags=TAGS,
+                attributes=ATTRS,
+                styles=STYLES,
+                strip=True)
+        return html.strip()
+
+    def embedded_images(self, html):
+        def process_src(src_match):
+            src = src_match.group(0)
+            src = src[5:-1]
+            if src.startswith('cid:'):
+                # Embedded image
+                cid = src[4:]
+                cid = cid.replace('<','').replace('>','')
+                part = self.message.search_fld_id(cid)
+                if part:
+                    src = reverse(
+                            'mailapp_mpart_inline',
+                            kwargs={
+                                'folder': self.message.folder.url(),
+                                'uid': self.message.uid,
+                                'part_number': part.part_number,
+                                })
+            elif not self.external_images:
+                src = '/static/img/pixel.png'
+            return 'src="%s"' % src
+        html = re.sub(r'src=".+?"',process_src,html)
+        return html
+
+    def run(self):
+        html = self.get_html()
+        html = self.bleach_html(html)
+        html = self.embedded_images(html)
+        return html
+
+
+##
+## Tags
+##
 
 # Tag to retrieve a message part from the server:
 
@@ -95,22 +154,14 @@ class PartTextNode(template.Node):
         text = wrap_lines( text, 80 )
         return text
 
-    def sanitize_html(self, text):
-        if self.external_images:
-            ATTRS['img'].append('src')
-        text = bleach.clean(text,
-                tags=TAGS,
-                attributes=ATTRS,
-                styles=STYLES,
-                strip=True)
-        return text
+    def sanitize_html(self, message, part):
+        return HtmlSanitize(message, part, self.external_images).run()
 
     def render(self, context):
         message =  resolve_variable(self.message, context)
         part = resolve_variable(self.part, context)
-        text = message.part(part)
         if part.is_plain():
-            text = self.sanitize_text(text)
+            text = self.sanitize_text(message.part(part))
         elif part.is_html():
-            text = self.sanitize_html(text)
+            text = self.sanitize_html(message, part)
         return text
