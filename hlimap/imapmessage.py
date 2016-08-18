@@ -104,6 +104,7 @@ Please note the THREAD command response is in the form:
 
 # Imports
 import quopri, base64
+from imaplib2.parsefetch import Single
 
 # Utils
 
@@ -587,6 +588,20 @@ class Message(object):
         text = self._imap.fetch(self.uid,query)[self.uid][query]
 
         return text
+
+    # Search
+    def search_fld_id(self, body_fld_id):
+        '''
+        Search the message parts for a single part with id body_fld_id
+        '''
+        for part in self.bodystructure.serial_message():
+            if isinstance(part,Single):
+                part_fld_id = part.body_fld_id
+                if part_fld_id:
+                    part_fld_id = part_fld_id.replace('<','').replace('>','')
+                if part_fld_id == body_fld_id:
+                    return part
+        return None
 
     # Flags:
     def get_flags(self, flags):
