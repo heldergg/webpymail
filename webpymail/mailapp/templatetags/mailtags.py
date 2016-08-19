@@ -78,7 +78,6 @@ class HtmlSanitize:
         return self.message.part(self.part)
 
     def bleach_html(self, html):
-        print(html)
         html = bleach.clean(html,
                 tags=TAGS,
                 attributes=ATTRS,
@@ -124,13 +123,15 @@ class HtmlSanitize:
 
 @register.tag(name="show_part")
 def do_show_part(parser, token):
-    try:
-        # split_contents() knows not to split quoted strings.
-        tag_name, message, part = token.split_contents()
-    except ValueError:
-        raise template.TemplateSyntaxError("%r tag requires two args: message, part" \
-            % token.contents.split()[0])
-    return PartTextNode(message, part)
+    contents = token.split_contents()
+    if len(contents)==3:
+        tag_name, message, part = contents
+        external_images = 'False'
+    elif len(contents)==4:
+        tag_name, message, part, external_images = contents
+    else:
+        raise template.TemplateSyntaxError('%r tag requires three args: message, part, show_images. Optionally you can add a third boolean arg to control the display of remote images.' % token.contents.split()[0])
+    return PartTextNode(message, part, external_images)
 
 def wrap_lines(text, colnum = 72):
     ln_list = text.split('\n')
@@ -142,26 +143,30 @@ def wrap_lines(text, colnum = 72):
     return '\n'.join(new_list)
 
 class PartTextNode(template.Node):
-    def __init__(self, message, part, external_images=True ):
+    def __init__(self, message, part, external_images):
         self.message = message
         self.part = part
         self.external_images = external_images
 
     def sanitize_text(self, text):
         text = escape(text)
-        # text = html_url_re.sub(make_links, text)
         text = bleach.linkify(text)
         text = wrap_lines( text, 80 )
         return text
 
-    def sanitize_html(self, message, part):
-        return HtmlSanitize(message, part, self.external_images).run()
+    def sanitize_html(self, message, part, external_images):
+        return HtmlSanitize(message, part, external_images).run()
 
     def render(self, context):
         message =  resolve_variable(self.message, context)
         part = resolve_variable(self.part, context)
+        if (self.external_images.upper()=='FALSE' or
+            self.external_images.upper()=='TRUE'):
+            external_images = self.external_images.upper()=='TRUE'
+        else:
+            external_images = resolve_variable(self.external_images, context)
         if part.is_plain():
             text = self.sanitize_text(message.part(part))
         elif part.is_html():
-            text = self.sanitize_html(message, part)
+            text = self.sanitize_html(message, part, external_images)
         return text

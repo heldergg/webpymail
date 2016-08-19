@@ -47,9 +47,7 @@ def show_message(request, folder, uid):
     '''Show the message
     '''
     config = WebpymailConfig( request )
-
     folder_name =  base64.urlsafe_b64decode(str(folder))
-
     M = serverLogin( request )
     folder = M[folder_name]
     message = folder[int(uid)]
@@ -61,11 +59,19 @@ def show_message(request, folder, uid):
         except hlimap.imapmessage.MessageNotFound:
             return redirect('message_list', folder=folder.url() )
 
+    # Check the query string
+    try:
+        external_images=bool(int(request.GET.get('external_images',
+            config.getboolean('message', 'external_images'))))
+    except ValueError:
+        external_images=config.getboolean('message', 'external_images')
+
     return render(request, 'mail/message_body.html',{
         'folder':folder,
         'message':message,
         'show_images_inline': config.getboolean('message', 'show_images_inline'),
         'show_html': config.getboolean('message', 'show_html'),
+        'external_images': external_images,
         })
 
 @login_required
