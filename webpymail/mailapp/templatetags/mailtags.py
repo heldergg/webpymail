@@ -38,33 +38,35 @@ import re, textwrap
 ##
 
 # Bleach configuration
-TAGS = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'br', 'code',
-        'em', 'em', 'h1', 'h2', 'h3', 'h4' 'hr', 'i', 'li', 'ol', 'p',
-        'strong', 'style', 'ul', 'div', 'table', 'th', 'td', 'tr',
-        'div', 'span', 'img']
-STYLES = ['azimuth', 'background-color', 'border-bottom-color',
-          'border-collapse', 'border-color', 'border-left-color',
-          'border-right-color', 'border-top-color', 'clear',
-          'color', 'cursor', 'direction', 'display', 'elevation',
-          'float', 'font', 'font-family', 'font-size', 'font-style',
-          'font-variant', 'font-weight', 'height', 'letter-spacing',
-          'line-height', 'overflow', 'pause', 'pause-after',
-          'pause-before', 'pitch', 'pitch-range', 'richness',
-          'speak', 'speak-header', 'speak-numeral', 'speak-punctuation',
-          'speech-rate', 'stress', 'text-align', 'text-decoration',
-          'text-indent', 'unicode-bidi', 'vertical-align',
-          'voice-family', 'volume', 'white-space', 'width']
+TAGS = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'br', 'center', 'code',
+        'div', 'div', 'em', 'em', 'h1', 'h2', 'h3', 'h4', 'hr', 'i', 'img'
+        'li', 'ol', 'p', 'span', 'strong', 'style', 'table', 'td', 'th',
+        'tr', 'ul',]
+
+STYLES = ['azimuth', 'background', 'background-color', 'border',
+        'border-bottom', 'border-bottom-color', 'border-collapse',
+        'border-color', 'border-left', 'border-left-color', 'border-right',
+        'border-right-color', 'border-top', 'border-top-color', 'clear',
+        'color', 'cursor', 'direction', 'display', 'elevation', 'float',
+        'font', 'font-family', 'font-size', 'font-style', 'font-variant',
+        'font-weight', 'height', 'letter-spacing', 'line-height',
+        'line-height', 'margin', 'overflow', 'padding', 'pause',
+        'pause-after', 'pause-before', 'pitch', 'pitch-range', 'richness',
+        'speak', 'speak-header', 'speak-numeral', 'speak-punctuation',
+        'speech-rate', 'stress', 'text-align', 'text-decoration',
+        'text-indent', 'text-transform', 'unicode-bidi', 'vertical-align',
+        'voice-family', 'volume', 'white-space', 'width']
+
 ATTRS = {'*': ['class', 'id', 'style', ],
          'a': ['href', 'title'],
          'abbr': ['title'],
          'acronym': ['title'],
          'img': ['src','alt','title', 'width', 'height'],
-         'table': ['width', 'align', 'cellpadding', 'cellspacing',
-                   'border'],
+         'table': ['width', 'align', 'cellpadding', 'cellspacing', 'border'],
          'td': ['width', 'valign'],
-         'th': ['width', 'valign'],
-         }
-PROTOCOLS = ['http', 'https', 'mailto'] # Not available in bleach 1.4.3
+         'th': ['width', 'valign'],}
+
+PROTOCOLS = ['http', 'https', 'mailto', 'cid'] # Not available in bleach 1.4.3
 
 
 class HtmlSanitize:
