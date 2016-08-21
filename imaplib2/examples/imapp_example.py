@@ -69,9 +69,9 @@ if __name__ == '__main__':
     print(len(list(a.keys())))
 
     message_str = '''Date: Mon, 7 Feb 1994 21:52:25 -0800 (PST)
-From: adsasdas@adasdasd.cadc.cd
+From: example_01@example.org
 Subject: afternoon meeting
-To: helder@grupo-oasis.com
+To: example_02@example.org
 Message-Id: <B27397-0100000@Blurdybloop.COM>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
