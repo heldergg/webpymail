@@ -23,7 +23,7 @@
 #
 
 from django import template
-from django.template import resolve_variable
+from django.template import Variable
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import escape
 from django.core.urlresolvers import reverse
@@ -74,7 +74,6 @@ class HtmlSanitize:
         self.message = message
         self.part = part
         self.external_images = external_images
-        #self.external_images = False
 
     def get_html(self):
         return self.message.part(self.part)
@@ -116,7 +115,6 @@ class HtmlSanitize:
         html = self.embedded_images(html)
         return html
 
-
 ##
 ## Tags
 ##
@@ -146,8 +144,8 @@ def wrap_lines(text, colnum = 72):
 
 class PartTextNode(template.Node):
     def __init__(self, message, part, external_images):
-        self.message = message
-        self.part = part
+        self.message = Variable(message)
+        self.part = Variable(part)
         self.external_images = external_images
 
     def sanitize_text(self, text):
@@ -160,13 +158,13 @@ class PartTextNode(template.Node):
         return HtmlSanitize(message, part, external_images).run()
 
     def render(self, context):
-        message =  resolve_variable(self.message, context)
-        part = resolve_variable(self.part, context)
+        message =  self.message.resolve(context)
+        part = self.part.resolve(context)
         if (self.external_images.upper()=='FALSE' or
             self.external_images.upper()=='TRUE'):
             external_images = self.external_images.upper()=='TRUE'
         else:
-            external_images = resolve_variable(self.external_images, context)
+            external_images = Variable(self.external_images).resolve(context)
         if part.is_plain():
             text = self.sanitize_text(message.part(part))
         elif part.is_html():
