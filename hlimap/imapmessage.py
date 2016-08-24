@@ -43,23 +43,27 @@ on three different ways:
     * Threaded, using the THREAD command - extension
 
 To confuse things even further, the THREAD command does not sort the messages,
-so we are forced to do that our selfs.
+so we are forced to do that ourselves.
 
 We have also three different ways of displaying the message list:
 
     * Unsorted
     * Sorted
-    * Threaded and sorted - naturaly if we use the
+    * Threaded and sorted
 
 Because the library should have always the same capabilities no matter what
 extensions the IMAP server might have we're forced to do, client side, all
 the sorting and threading necessary if no extension is available.
 
-The relation matrix is::
+The relation matrix is:
 
-    T - thread capability
-    S - sort capability
-    D - Default search
+    Capabilities:
+        T - thread capability
+        S - sort capability
+        D - Default search
+
+    C - Client side
+    S - Server side
 
     +---------------+-----------------+-----------------+
     | Display mode  |           Capabilities            |
@@ -85,8 +89,6 @@ The relation matrix is::
     | Unsorted      | S SEARCH        | S SEARCH        |
     +---------------+-----------------+-----------------+
 
-Where the 'S' means server side and the 'C' client side.
-
 Please note the THREAD command response is in the form:
 
     S: * THREAD (2)(3 6 (4 23)(44 7 96))
@@ -99,7 +101,6 @@ Please note the THREAD command response is in the form:
             \-- 44
                 \-- 7
                     \-- 96
-
 '''
 
 # Imports
