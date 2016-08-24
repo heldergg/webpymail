@@ -3,9 +3,6 @@
 
 {% if part.is_text and not part.is_attachment %}
   {% if part.is_html and show_html %} {# HTML part #}
-    {% if not external_images %}
-    <p><a href="{% url 'mailapp-message' folder=message.folder.url uid=message.uid  %}?external_images=1">{% trans "Click here to show remote images. This is a security and privacy risk."  %}</a></p>
-    {% endif %}
     {% autoescape off %}
     {% show_part message part external_images %}
     {% endautoescape %}

@@ -39,7 +39,7 @@ import re, textwrap
 
 # Bleach configuration
 TAGS = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'br', 'center', 'code',
-        'div', 'div', 'em', 'em', 'h1', 'h2', 'h3', 'h4', 'hr', 'i', 'img'
+        'div', 'div', 'em', 'em', 'h1', 'h2', 'h3', 'h4', 'hr', 'i', 'img',
         'li', 'ol', 'p', 'span', 'strong', 'style', 'table', 'td', 'th',
         'tr', 'ul',]
 
@@ -61,28 +61,34 @@ ATTRS = {'*': ['class', 'id', 'style', ],
          'a': ['href', 'title'],
          'abbr': ['title'],
          'acronym': ['title'],
-         'img': ['src','alt','title', 'width', 'height'],
+         'img': ['src', 'alt', 'title', 'width', 'height'],
          'table': ['width', 'align', 'cellpadding', 'cellspacing', 'border'],
          'td': ['width', 'valign'],
          'th': ['width', 'valign'],}
 
 PROTOCOLS = ['http', 'https', 'mailto', 'cid'] # Not available in bleach 1.4.3
 
-
 class HtmlSanitize:
     def __init__(self, message, part, external_images):
         self.message = message
         self.part = part
         self.external_images = external_images
+        self.has_external_images = False
 
     def get_html(self):
         return self.message.part(self.part)
+
+    def pre_bleach_clean(self, html):
+        html = re.sub(r'<\s*title\s*>.*?<\s*/\s*title\s*>','',html,
+             flags=re.MULTILINE|re.IGNORECASE)
+        return html
 
     def bleach_html(self, html):
         html = bleach.clean(html,
                 tags=TAGS,
                 attributes=ATTRS,
                 styles=STYLES,
+                protocols=PROTOCOLS,
                 strip=True)
         return html.strip()
 
@@ -104,6 +110,7 @@ class HtmlSanitize:
                                 'part_number': part.part_number,
                                 })
             elif not self.external_images:
+                self.has_external_images = True
                 src = '/static/img/pixel.png'
             return 'src="%s"' % src
         html = re.sub(r'src=".+?"',process_src,html)
@@ -111,6 +118,7 @@ class HtmlSanitize:
 
     def run(self):
         html = self.get_html()
+        html = self.pre_bleach_clean(html)
         html = self.bleach_html(html)
         html = self.embedded_images(html)
         return html
@@ -155,7 +163,15 @@ class PartTextNode(template.Node):
         return text
 
     def sanitize_html(self, message, part, external_images):
-        return HtmlSanitize(message, part, external_images).run()
+        sanitizer = HtmlSanitize(message, part, external_images)
+        html = sanitizer.run()
+        if sanitizer.has_external_images:
+            warning = ('<div class="warning">'
+                       '<a href="?external_images=1">%s</a></div>\n' %
+                       _('Click here to show remote images. '
+                         'This is a security and privacy risk.'))
+            html = warning + html
+        return html
 
     def render(self, context):
         message =  self.message.resolve(context)
