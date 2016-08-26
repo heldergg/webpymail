@@ -28,7 +28,7 @@ import re, string
 
 # Regexp
 literal_re = re.compile(r'^{(\d+)}\r\n')
-simple_re = re.compile(r'^([^ ()]+)')
+simple_re = re.compile(r'^([^ ()\[]+(?:\[[^\]]+\])?)')
 quoted_re = re.compile(r'^"((?:[^"\\]|\\")*?)"')
 
 # Errors
@@ -42,6 +42,7 @@ def scan_sexp(text):
 
     @param text: text to be scanned.
     @type  text: s-exp string
+
 
     @return result: s-exp in a python list.
     '''
