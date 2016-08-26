@@ -1,5 +1,6 @@
 {%load loader_tags %}{% extends 'base/base.html' %}
 {% load i18n %}
+{% load webtags %}
 
 {% block inpage_title %}{% trans "Message List" %}{% endblock %}
 
@@ -45,22 +46,22 @@
 
 <div class="message_list">
 {% for message in folder %}
-    <div class="{% cycle 'row_a' 'row_b' %}">
+  <div class="{% cycle 'row_a' 'row_b' %}" style="margin-left:{{ message.level }}em;">
     <div class="message">
-    <div class="date">{{ message.envelope.env_date|date:"Y.m.d H:i" }}</div>
-    <div class={% if message.seen %}"seen"{% else %}"not_seen"{% endif %}>
-    {% if message.deleted %}<div class="deleted">{% endif %}
-    <p><input type="checkbox" name="messages" value="{{message.uid }}">
-       <a href="{% url 'mailapp-message' folder=folder.url uid=message.uid %}">
-        {% if message.envelope.env_subject %}{{ message.envelope.env_subject }}
-        {% else %}{% trans "(No subject)" %}{% endif %}</a></p>
+      <div class="date">{{ message.envelope.env_date|date:"Y.m.d H:i" }}</div>
+      <div class={% if message.seen %}"seen"{% else %}"not_seen"{% endif %}>
+      {% if message.deleted %}<div class="deleted">{% endif %}
+      <p><input type="checkbox" name="messages" value="{{message.uid }}">
+         <a href="{% url 'mailapp-message' folder=folder.url uid=message.uid %}">
+          {% if message.envelope.env_subject %}{{ message.envelope.env_subject }}
+          {% else %}{% trans "(No subject)" %}{% endif %}</a></p>
+      </div>
+      {% if message.deleted %}</div>{% endif %}
+      <div class="date">{% trans "Size" %}: {{ message.size|filesizeformat }}</div>
+      <p>{% trans "From" %}: {{ message.envelope.from_short|join:", " }}</p>
+      <p>{% trans "To" %}: {{ message.envelope.to_short|join:", " }}</p>
     </div>
-    {% if message.deleted %}</div>{% endif %}
-    <div class="date">{% trans "Size" %}: {{ message.size|filesizeformat }}</div>
-    <p>{% trans "From" %}: {{ message.envelope.from_short|join:", " }}</p>
-    <p>{% trans "To" %}: {{ message.envelope.to_short|join:", " }}</p>
-    </div>
-    </div>
+  </div>
 {% endfor %}
 
 </div>

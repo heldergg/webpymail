@@ -64,7 +64,6 @@ def show_message_list_view(request, folder=settings.DEFAULT_FOLDER):
         search_criteria = 'KEYWORD %s' % flag
 
     message_list.set_search_expression(search_criteria)
-    message_list.refresh_messages()
 
     # Message action form
     raw_message_list = [ (uid,uid) for uid in message_list.flat_message_list ]
@@ -84,7 +83,6 @@ def show_message_list_view(request, folder=settings.DEFAULT_FOLDER):
             message_list.paginator.msg_per_page = -1
         page = 1
     message_list.paginator.current_page = page
-    message_list.add_messages_range()
 
     # Get the default identity
     config =  WebpymailConfig( request )
