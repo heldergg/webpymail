@@ -68,7 +68,9 @@ class Threader:
         '''
         # This is the simplistic aproach for this problem
         # in the future a more robust soluction must be found
-        return message_id.replace('<','').replace('>','').replace('"','')
+        if message_id:
+            return message_id.replace('<','').replace('>','').replace('"','')
+        return ''
 
     def get_message_id(self, msg_id, message_id_list):
         '''Get the header "Message-ID:" from the message with UID or sequence
