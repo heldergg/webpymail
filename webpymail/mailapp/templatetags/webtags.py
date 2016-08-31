@@ -23,7 +23,7 @@
 #
 
 from django import template
-from django.template.base import Variable
+from django.template.base import Variable, VariableDoesNotExist
 from django.utils.translation import gettext_lazy as _
 
 register = template.Library()
@@ -38,7 +38,6 @@ def do_spaces(parser, token):
     except ValueError:
         raise template.TemplateSyntaxError("%r tag requires one arg: num_spaces" \
             % token.contents.split()[0])
-
     return PartTextNode(num_spaces)
 
 class PartTextNode(template.Node):
@@ -51,5 +50,43 @@ class PartTextNode(template.Node):
             num_spaces = int(num_spaces)
         except ValueError:
             raise template.TemplateSyntaxError("%r tag's num_spaces argument must be an int" % tag_name)
-
         return '&nbsp;&nbsp;' * num_spaces
+
+# Given a variable of type QueryDict it will update it and display the resulting
+# query
+@register.tag(name="queryupdate")
+def do_spaces(parser, token):
+    try:
+        tokens = token.split_contents()
+        if len(tokens) == 2:
+            tag_name, query = tokens
+            query_parts = []
+        else:
+            tag_name, query, *query_parts = tokens
+    except ValueError:
+        raise template.TemplateSyntaxError('%r tag requires ot least two args. The first must be a variable of they QueryDict, and then one or assignement expressions. The first must be a variable of they QueryDict and then one or query variables to create or update.')
+    return UpdateQueryNode(query, query_parts)
+
+class UpdateQueryNode(template.Node):
+    def __init__(self, query, parts):
+        self.query = Variable(query)
+        self.parts = self.query_update(parts)
+
+    def query_update(self, query_parts):
+        parts = []
+        for part in query_parts:
+            parts.append(part.split('='))
+        return parts
+
+    def render(self, context):
+        query = self.query.resolve(context)
+        for var, value in self.parts:
+            try:
+                query[var] = Variable(value).resolve(context)
+            except VariableDoesNotExist:
+                query[var] = value
+        query_str = query.urlencode()
+        if query_str:
+            return '?%s' % query_str
+        else:
+            return ''

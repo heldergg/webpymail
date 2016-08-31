@@ -50,20 +50,25 @@ def show_message_list_view(request, folder=settings.DEFAULT_FOLDER):
     M = serverLogin( request )
     folder_name =  base64.urlsafe_b64decode(str(folder))
     folder = M[folder_name]
-
     message_list = folder.message_list
 
     # Set the search criteria:
     search_criteria = 'ALL'
-    query = None
+    message_list.set_search_expression(search_criteria)
+
+    # Handle GET queries
+    query = request.GET.copy()
 
     flag = request.GET.get('flag', None)
-
     if flag:
-        query = 'flag=%s' % flag
         search_criteria = 'KEYWORD %s' % flag
 
-    message_list.set_search_expression(search_criteria)
+    show_style = request.GET.get('show_style','sorted')
+    if show_style.upper() == 'THREADED':
+        message_list.set_threaded()
+
+    if 'page' in query:
+        query.pop('page')
 
     # Message action form
     raw_message_list = [ (uid,uid) for uid in message_list.flat_message_list ]

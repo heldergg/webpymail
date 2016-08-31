@@ -1,27 +1,28 @@
 {% load loader_tags %}{% load i18n %}
+{% load webtags %}
 
 <div class="message_page">
 <div class="message_page_right">
 <p>
 {% if paginator.has_next_page %}
-  <a href="{% url 'message_list' folder.url %}?page={{ paginator.next }}{% if query %}&{{ query }}{% endif %}">{% trans "Next &gt;" %}</a>
+<a href="{% url 'message_list' folder.url %}{% queryupdate query page=paginator.next %}">{% trans "Next &gt;" %}</a>
 {% else %}
   <span class="disabled">{% trans "Next &gt;" %}</span>
 {% endif %}
 {% if paginator.is_not_last %}
-  <a href="{% url 'message_list' folder.url %}?page={{ paginator.last }}{% if query %}&{{ query }}{% endif %}">{% trans "Last &gt;|" %}</a>
+<a href="{% url 'message_list' folder.url %}{% queryupdate query page=paginator.last %}">{% trans "Last &gt;|" %}</a>
 {% else %}
   <span class="disabled">{% trans "Last &gt;|" %}</span>
 {% endif %}</p>
 </div>
 <p>
 {% if paginator.is_not_first %}
-  <a href="{% url 'message_list' folder.url %}{% if query %}?{{ query }}{% endif %}">{% trans "|&lt; First" %}</a>
+  <a href="{% url 'message_list' folder.url %}{% queryupdate query page=1 %}">{% trans "|&lt; First" %}</a>
 {% else %}
   <span class="disabled">{% trans "|&lt; First" %}</span>
 {% endif %}
 {% if paginator.has_previous_page %}
-  <a href="{% url 'message_list' folder.url %}?page={{ paginator.previous }}{% if query %}&{{ query }}{% endif %}">{% trans "&lt; Previous" %}</a>
+<a href="{% url 'message_list' folder.url %}{% queryupdate query page=paginator.previous %}">{% trans "&lt; Previous" %}</a>
 {% else %}
   <span class="disabled">{% trans "&lt; Previous" %}</span>
 {% endif %}</p>
