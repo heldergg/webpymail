@@ -23,7 +23,7 @@
 #
 
 from django import template
-from django.template import resolve_variable
+from django.template.base import Variable
 from django.utils.translation import gettext_lazy as _
 
 register = template.Library()
@@ -46,7 +46,7 @@ class PartTextNode(template.Node):
         self.num_spaces = num_spaces
 
     def render(self, context):
-        num_spaces =  resolve_variable(self.num_spaces, context)
+        num_spaces = Variable(self.num_spaces).resolve(context)
         try:
             num_spaces = int(num_spaces)
         except ValueError:
