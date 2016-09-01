@@ -28,7 +28,7 @@ import re, string
 
 # Regexp
 literal_re = re.compile(r'^{(\d+)}\r\n')
-simple_re = re.compile(r'^([^ ()\[]+(?:\[[^\]]+\])?)')
+simple_re = re.compile(r'^([^ ()\[]+(?:\[[^\]]*\])?)')
 quoted_re = re.compile(r'^"((?:[^"\\]|\\")*?)"')
 
 # Errors
