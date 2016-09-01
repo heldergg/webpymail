@@ -28,6 +28,9 @@ class PaginatorError(Exception): pass
 
 class Paginator(object):
     def __init__(self, msg_list):
+        '''
+        msg_list is an instance of hlimap.MessageList
+        '''
         self.msg_list = msg_list
         # self.msg_per_page = -1 => ALL MESSAGES
         self.msg_per_page = 50
@@ -48,7 +51,7 @@ class Paginator(object):
         elif page > self.max_page:
             page = self.max_page
         if self.__page != page:
-            self.refresh = True
+            self.msg_list.refresh = True
         self.__page = page
 
     def _get_page(self):
