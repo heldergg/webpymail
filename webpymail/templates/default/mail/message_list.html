@@ -39,7 +39,34 @@
 <input type="submit" name="apply" value="{% trans "Apply" %}"> |
 {{ form.folder }}
 <input type="submit" name="move" value="{% trans "Move" %}">
-<input type="submit" name="copy" value="{% trans "Copy" %}"> |
+<input type="submit" name="copy" value="{% trans "Copy" %}">
+</div>
+
+<div class="message_view_mode">
+  <table border=1>
+    <tr>
+      <th>{% trans "Show style:" %}</th>
+      <th colspan=4>{% trans "Sort order:" %}</th>
+      <th>{% trans "Sort:" %}</th>
+    </tr>
+    <tr>
+      <td><a href="{% queryupdate query show_style="sorted" %}">{% trans "Sorted" %}</a></td>
+      <td><a href="{% queryupdate query sort_order="arrival" %}">{% trans "Arrival" %}</a></td>
+      <td><a href="{% queryupdate query sort_order="date" %}">{% trans "Date" %}</a></td>
+      <td><a href="{% queryupdate query sort_order="subject" %}">{% trans "Subject" %}</a></td>
+      <td><a href="{% queryupdate query sort_order="size" %}">{% trans "Size" %}</a></td>
+      <td><a href="{% queryupdate query sort="ascending" %}">{% trans "Ascending" %}</a></td>
+
+    </tr>
+    <tr>
+      <td><a href="{% queryupdate query show_style="threaded" %}">{% trans "Threaded" %}</a></td>
+      <td><a href="{% queryupdate query sort_order="to" %}">{% trans "To" %}</a></td>
+      <td><a href="{% queryupdate query sort_order="from" %}">{% trans "From" %}</a></td>
+      <td><a href="{% queryupdate query sort_order="cc" %}">{% trans "Cc" %}</a></td>
+      <td></td>
+      <td><a href="{% queryupdate query sort="descending" %}">{% trans "Descending" %}</a></td>
+    </tr>
+  </table>
 </div>
 
 {% include "mail/inc_page_nav.html" %}

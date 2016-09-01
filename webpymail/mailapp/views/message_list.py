@@ -38,6 +38,7 @@ from .mail_utils import serverLogin
 from themesapp.shortcuts import render
 from utils.config import WebpymailConfig
 from . import msgactions
+from hlimap.imapmessage import SORT_KEYS
 
 ##
 # Views
@@ -67,8 +68,28 @@ def show_message_list_view(request, folder=settings.DEFAULT_FOLDER):
     if show_style.upper() == 'THREADED':
         message_list.set_threaded()
 
+    sort_order = request.GET.get('sort_order','DATE').upper()
+    sort = request.GET.get('sort','DESCENDING').upper()
+    if sort == 'DESCENDING':
+        sort = '-'
+    else:
+        sort = ''
+    if sort_order in SORT_KEYS:
+        message_list.set_sort_program('%s%s' % (sort, sort_order))
+
+    try:
+        page = int(request.GET.get('page',1))
+    except:
+        page = request.GET.get('page',1)
+        if page == 'all':
+            message_list.paginator.msg_per_page = -1
+        page = 1
     if 'page' in query:
         query.pop('page')
+
+    # Pagination
+    message_list.paginator.msg_per_page = 40
+    message_list.paginator.current_page = page
 
     # Message action form
     raw_message_list = [ (uid,uid) for uid in message_list.flat_message_list ]
@@ -77,17 +98,6 @@ def show_message_list_view(request, folder=settings.DEFAULT_FOLDER):
     # If it's a POST request
     if request.method == 'POST':
         msgactions.batch_change( request, folder, raw_message_list )
-
-    # Pagination
-    message_list.paginator.msg_per_page = 40
-    try:
-        page = int(request.GET.get('page',1))
-    except:
-        page = request.GET.get('page',1)
-        if page == 'all':
-            message_list.paginator.msg_per_page = -1
-        page = 1
-    message_list.paginator.current_page = page
 
     # Get the default identity
     config =  WebpymailConfig( request )
