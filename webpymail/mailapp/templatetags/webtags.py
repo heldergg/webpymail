@@ -55,7 +55,7 @@ class PartTextNode(template.Node):
 # Given a variable of type QueryDict it will update it and display the resulting
 # query
 @register.tag(name="queryupdate")
-def do_spaces(parser, token):
+def do_queryupdate(parser, token):
     try:
         tokens = token.split_contents()
         if len(tokens) == 2:
@@ -64,7 +64,7 @@ def do_spaces(parser, token):
         else:
             tag_name, query, *query_parts = tokens
     except ValueError:
-        raise template.TemplateSyntaxError('%r tag requires ot least two args. The first must be a variable of they QueryDict, and then one or assignement expressions. The first must be a variable of they QueryDict and then one or query variables to create or update.')
+        raise template.TemplateSyntaxError('%r tag requires ot least two args. The first must be a variable of type QueryDict, and then one or assignement expressions. The first must be a variable of type QueryDict and then one or query variables to create or update.')
     return UpdateQueryNode(query, query_parts)
 
 class UpdateQueryNode(template.Node):
@@ -79,12 +79,13 @@ class UpdateQueryNode(template.Node):
         return parts
 
     def render(self, context):
-        query = self.query.resolve(context)
+        query = self.query.resolve(context).copy()
         for var, value in self.parts:
-            try:
+            if (value[0] == value[-1] and value[0] in ('\'','"') and
+                len(value[0])>2):
+                query[var] = value[1:-1]
+            else:
                 query[var] = Variable(value).resolve(context)
-            except VariableDoesNotExist:
-                query[var] = value
         query_str = query.urlencode()
         if query_str:
             return '?%s' % query_str
