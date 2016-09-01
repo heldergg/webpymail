@@ -146,9 +146,9 @@ class MessageNotFound(Exception): pass
 
 SORT_KEYS = ( 'ARRIVAL', 'CC', 'DATE', 'FROM', 'SIZE', 'SUBJECT', 'TO' )
 
-THREADED = 7
-SORTED   = 3
 UNSORTED = 1
+SORTED   = 2
+THREADED = 3
 
 # System flags
 DELETED = r'\Deleted'
@@ -159,7 +159,7 @@ DRAFT = r'\Draft'
 RECENT = r'\Recent'
 
 class MessageList(object):
-    def __init__(self, server, folder, threaded=False):
+    def __init__(self, server, folder):
         '''
         @param server: ImapServer instance
         @param folder: Folder instance this message list is associated with
@@ -189,13 +189,9 @@ class MessageList(object):
         self.refresh = True # Get the message list and their headers
         self.flat_message_list = []
         # Pagination options
-        self.show_style = THREADED if threaded else SORTED
+        self.show_style = SORTED
         self._number_messages = None
         self.paginator = Paginator(self)
-
-        # REMOVE THIS! This is to test the client side sorting and threading
-        self.show_style = SORTED
-        self.search_capability = [UNSORTED]
 
     # Sort program:
     def sort_string(self):
@@ -234,6 +230,13 @@ class MessageList(object):
     # Search expression:
     def set_search_expression(self, search_expression):
         self.search_expression = search_expression
+
+    # Display options
+    def set_threaded(self):
+        self.show_style = THREADED
+
+    def set_sorted(self):
+        self.show_style = SORTED
 
     # Information retrieval
     def _get_number_messages(self):
@@ -288,9 +291,12 @@ class MessageList(object):
 
     def update_message_dict(self, message_list, message_dict):
         for msg_id, level, parent in threaded_tree(message_list):
+            if msg_id not in message_dict:
+                continue
             if level>0:
-                if msg_id not in message_dict[parent]['children']:
-                    message_dict[parent]['children'].append(msg_id)
+                if parent in message_dict:
+                    if msg_id not in message_dict[parent]['children']:
+                        message_dict[parent]['children'].append(msg_id)
                 message_dict[msg_id]['parent'] = parent
                 message_dict[msg_id]['level'] = level
                 message_dict[msg_id]['data'].level = level
@@ -354,12 +360,13 @@ class MessageList(object):
         # Set the number of message present in the folder according to the
         # current search expression
         self._number_messages = len(flat_message_list)
-        # Paginate now if we have SORT capability, this way we don't have to
-        # retrieve message headers to all messages returned by the search
+        # Paginate now if we have SORT or THREAD capability, this way we don't
+        # have to retrieve message headers to all messages returned by the search
         # program
-        if SORTED in self.search_capability:
-            message_list = self.paginate(flat_message_list)
-            flat_message_list = list(message_list)
+        if SORTED in self.search_capability or THREADED in self.search_capability:
+            flat_message_list = self.paginate(flat_message_list)
+            if not(self.show_style == THREADED and THREADED in self.search_capability):
+                message_list = list(flat_message_list)
         # Create the message dictionary
         message_dict = self.create_message_dict(flat_message_list)
         # Get message's header information
@@ -379,7 +386,8 @@ class MessageList(object):
         # thread level of each message and each message children
         if self.show_style==THREADED:
             message_dict = self.update_message_dict(message_list, message_dict)
-            # Sort the threads according to the defined program
+            # TODO: Sort the threads according to the defined program unless
+            # we have the sort extension
         # House keeping
         self.message_dict = message_dict
         self.flat_message_list = flat_message_list
@@ -406,11 +414,16 @@ class MessageList(object):
             self.refresh_messages()
         if self.paginator.msg_per_page == -1:
             message_list = self.flat_message_list
-        else:
+        elif len(self.flat_message_list)>self.paginator.msg_per_page:
             first_msg = ( self.paginator.current_page - 1
                         ) * self.paginator.msg_per_page
             last_message = first_msg + self.paginator.msg_per_page - 1
             message_list = self.flat_message_list[first_msg:last_message+1]
+        else:
+            # If we're using the SORT extention the flat_message_list is
+            # truncated early in order to avoid downloading the message
+            # information for all the messages in the folder.
+            message_list = self.flat_message_list
         for msg_id in message_list:
             yield self.message_dict[msg_id]['data']
 
