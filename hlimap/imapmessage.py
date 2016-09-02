@@ -240,6 +240,8 @@ class MessageList(object):
 
     # Information retrieval
     def _get_number_messages(self):
+        if self.search_expression.upper() == 'ALL':
+            self._number_messages = self.folder.status['MESSAGES']
         if self._number_messages == None:
             self.refresh_messages()
         return self._number_messages
