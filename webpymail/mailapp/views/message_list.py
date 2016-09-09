@@ -92,12 +92,19 @@ def show_message_list_view(request, folder=settings.DEFAULT_FOLDER):
     message_list.paginator.current_page = page
 
     # Message action form
+    message_list.refresh_messages() # Necessary to get the flat_message_list
     raw_message_list = [ (uid,uid) for uid in message_list.flat_message_list ]
     form = MessageActionForm(data={}, message_list=raw_message_list, server=M)
 
     # If it's a POST request
     if request.method == 'POST':
         msgactions.batch_change( request, folder, raw_message_list )
+        # TODO: When setting message flags the MessageList's messages objects
+        # are not updated, so we have to refresh the messages to reflect the
+        # changes in the message list. This should not be necessary, the set
+        # and reset flags method in the Folder objects should update the
+        # message information, saving this way a refresh_messages call.
+        message_list.refresh_messages()
 
     # Get the default identity
     config =  WebpymailConfig( request )
