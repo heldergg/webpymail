@@ -307,7 +307,7 @@ class MessageList(object):
     def create_message_objects(self, flat_message_list, message_dict):
         if flat_message_list:
             for msg_id,msg_info in self._imap.fetch(flat_message_list,
-                '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE BODY[HEADER.FIELDS (REFERENCES)])').items():
+                '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE BODY.PEEK[HEADER.FIELDS (REFERENCES)])').items():
                 message_dict[msg_id]['data'] = Message(
                     self.server, self.folder, msg_info )
         return message_dict
@@ -461,13 +461,13 @@ class Message(object):
     # References
     def get_references(self, msg_info):
         ref_list = []
-        if 'BODY[HEADER.FIELDS (REFERENCES)]' in msg_info:
-            ref_list = msg_info['BODY[HEADER.FIELDS (REFERENCES)]']
+        if 'BODY.PEEK[HEADER.FIELDS (REFERENCES)]' in msg_info:
+            ref_list = msg_info['BODY.PEEK[HEADER.FIELDS (REFERENCES)]']
             ref_list = ref_list.split('References:')
             if len(ref_list)<2:
                 return []
             return [ref.strip(' \r\n\t')
-                for ref in msg_info['BODY[HEADER.FIELDS (REFERENCES)]'].split(
+                for ref in msg_info['BODY.PEEK[HEADER.FIELDS (REFERENCES)]'].split(
                     'References:')[1].split() if ref.strip(' \r\n\t')]
         return []
 
