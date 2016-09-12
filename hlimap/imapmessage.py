@@ -403,7 +403,7 @@ class MessageList(object):
         # Message object
         try:
             msg_info = self._imap.fetch(message_id,
-                '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE)')[message_id]
+                '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE BODY.PEEK[HEADER.FIELDS (REFERENCES)])')[message_id]
         except KeyError:
             raise MessageNotFound('%s message not found' % message_id)
         return Message(self.server, self.folder, msg_info)
