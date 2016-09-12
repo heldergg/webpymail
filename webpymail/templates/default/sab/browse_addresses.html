@@ -7,11 +7,18 @@
 {% endblock %}
 
 {% block extra_menus %}
-<a href="{% url 'folder_list' %}">{% trans "Folder List" %}</a>&nbsp;&nbsp;
+<a href="{% url 'folder_list' %}" title="{% trans "Folder List" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/folder.svg" width="32px" height="32px">
+</a>
+&nbsp;
+<a href="{% url 'add_address' %}" title="{% trans "New Address" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/list-add-user.svg" width="32px" height="32px">
+</a>
 {% endblock %}
 
 {% block contents %}
 <h2>{% trans "Browse addresses" %}</h2>
+<div class="address_list">
 {% if address_list %}
   <form method="post" action="{% url 'compose_to_addresses' %}">
     {% csrf_token %}
@@ -40,13 +47,11 @@
       </tr>
     {% endfor %}
     </table>
-    <input type="submit" name="compose" value="{% trans "Compose" %}"> |
-    <a href="{% url 'add_address' %}">{% trans "New Address" %}</a>
+    <br>
+    <input type="submit" name="compose" value="{% trans "Compose" %}">
   </form>
 {% else %}
   <p>{% trans "No adresses available." %}</p>
-  <hr>
-  <p><a href="{% url 'add_address' %}">{% trans "New Address" %}</a>
 {% endif %}
-
+</div>
 {% endblock %}

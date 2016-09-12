@@ -9,29 +9,39 @@
 
 {% block inpage_title %}{% trans "Message" %}{% endblock %}
 
-{% block extra_menus %}<a href="{% url 'message_list' folder.url %}">
-{% trans "Message List" %}</a>&nbsp;&nbsp;
-<a href="{% url 'folder_list' %}">{% trans "Folder List" %}</a>&nbsp;&nbsp;{% endblock %}
+{% block extra_menus %}
+<a href="{% url 'mailapp_reply_message' folder=message.folder.url uid=message.uid %}" title="{% trans "Reply" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/mail-reply-sender.svg" width="32px" height="32px">
+</a>
+<a href="{% url 'mailapp_reply_all_message' folder=message.folder.url uid=message.uid %}" title="{% trans "Reply All" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/mail-reply-all.svg" width="32px" height="32px">
+</a>
+<a href="{% url 'mailapp_forward_inline_message' folder=message.folder.url uid=message.uid %}" title="{% trans "Forward" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/mail-forward.svg" width="32px" height="32px">
+</a>
+<a href="{% url 'mailapp_forward_message' folder=message.folder.url uid=message.uid %}" title="{% trans "Forward as Attachment" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/mail-forward-attachment.svg" width="32px" height="32px">
+</a>
+
+&nbsp;&nbsp;
+<a href="{% url 'folder_list' %}" title="{% trans "Folder List" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/folder.svg" width="32px" height="32px">
+</a>
+<a href="{% url 'message_list' folder.url %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/mail-message-new-list.svg" width="32px" height="32px" title="{% trans "Message List" %}"></a>
+&nbsp;
+<a href="{% url 'mailapp_send_message' %}"><img class="top_menu_entry" src="{{ STATIC_URL }}img/mail-message-new.svg" width="32px" height="32px" title="{% trans "New Message" %}"></a>
+{% endblock %}
+
+{% block main_menu %}
+  {# Message information #}
+  <li><a href="{% url 'mailapp_message_header' folder=message.folder.url uid=message.uid %}">{% trans "Message Header" %}</a>
+  <li><a href="{% url 'mailapp_message_structure' folder=message.folder.url uid=message.uid %}">{% trans "Message Structure" %}</a>
+  <li></li><a href="{% url 'mailapp_message_source' folder=message.folder.url uid=message.uid %}">{% trans "Message Source" %}</a>
+<li><hr></li>
+{% endblock %}
 
 {% block contents %}
-<div id="sub_menu">
-    <div id="sub_menu_right">
-      {# Delete message #}
-      <form method="post" action="{% url 'mailapp-message' folder=message.folder.url uid=message.uid %}">
-          {% csrf_token %}
-          {% if message.deleted %}
-              <input type="submit" name="undelete" value="{% trans "Undelete" %}" />
-          {% else %}
-              <input type="submit" name="delete" value="{% trans "Delete" %}" />
-          {% endif %}
-      </form>
-    </div>
-    <a href="{% url 'mailapp_reply_message' folder=message.folder.url uid=message.uid %}">{% trans "Reply" %}</a>&nbsp;&nbsp;
-    <a href="{% url 'mailapp_reply_all_message' folder=message.folder.url uid=message.uid %}">{% trans "Reply All" %}</a>&nbsp;&nbsp;
-    <a href="{% url 'mailapp_forward_inline_message' folder=message.folder.url uid=message.uid %}">{% trans "Forward" %}</a>&nbsp;&nbsp;
-    <a href="{% url 'mailapp_forward_message' folder=message.folder.url uid=message.uid %}">{% trans "Forward as Attachment" %}</a>
-</div>
-
 <div class="message">
   {# Message header #}
   {% with message=message uid=message.uid %}
@@ -130,10 +140,18 @@
   </div> <!-- message_body -->
 </div> <!-- message -->
 
-{# Message information #}
-<div class="message_info">
-<p><a href="{% url 'mailapp_message_header' folder=message.folder.url uid=message.uid %}">{% trans "Message Header" %}</a> |
-<a href="{% url 'mailapp_message_structure' folder=message.folder.url uid=message.uid %}">{% trans "Message Structure" %}</a> |
-<a href="{% url 'mailapp_message_source' folder=message.folder.url uid=message.uid %}">{% trans "Message Source" %}</a></p>
+
+<div id="bottom_toolbar">
+  <div class="toolbar_right">
+    {# Delete message #}
+    <form method="post" action="{% url 'mailapp-message' folder=message.folder.url uid=message.uid %}">
+        {% csrf_token %}
+        {% if message.deleted %}
+            <input type="submit" name="undelete" value="{% trans "Undelete" %}" />
+        {% else %}
+            <input type="submit" name="delete" value="{% trans "Delete" %}" />
+        {% endif %}
+    </form>
+  </div>
 </div>
 {% endblock %}

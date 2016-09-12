@@ -21,15 +21,15 @@
     <td>{% for addr in message.envelope.env_from %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ STATIC_URL }}img/star_yellow.png"
-               width=16
-               height=16
+          <img src="{{ STATIC_URL }}img/rating.svg"
+               width="16px"
+               height="16px"
                alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=uid %}">
-            <img src="{{ STATIC_URL }}img/star_empty.png"
-                 width=16
-                 height=16
+            <img src="{{ STATIC_URL }}img/rating-unrated.svg"
+                 width="16px"
+                 height="16px"
                  alt="Not bookmarked">
           </a>
         {% endifhasaddr %}
@@ -43,15 +43,15 @@
     <td>{% for addr in message.envelope.env_to %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ STATIC_URL }}img/star_yellow.png"
-               width=16
-               height=16
+          <img src="{{ STATIC_URL }}img/rating.svg"
+               width="16px"
+               height="16px"
                alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=uid %}">
-            <img src="{{ STATIC_URL }}img/star_empty.png"
-                 width=16
-                 height=16
+            <img src="{{ STATIC_URL }}img/rating-unrated.svg"
+                 width="16px"
+                 height="16px"
                  alt="Not bookmarked">
           </a>
         {% endifhasaddr %}
@@ -65,15 +65,15 @@
     <td>{% for addr in message.envelope.env_cc %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ STATIC_URL }}img/star_yellow.png"
-               width=16
-               height=16
+          <img src="{{ STATIC_URL }}img/rating.svg"
+               width="16px"
+               height="16px"
                alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=uid %}">
-            <img src="{{ STATIC_URL }}img/star_empty.png"
-                 width=16
-                 height=16
+            <img src="{{ STATIC_URL }}img/rating-unrated.svg"
+                 width="16px"
+                 height="16px"
                  alt="Not bookmarked">
           </a>
         {% endifhasaddr %}
@@ -87,15 +87,15 @@
     <td>{% for addr in message.envelope.env_bcc %}
         {{addr.0}} &lt;{{addr.1}}&gt;&nbsp;
         {% ifhasaddr addr %}
-          <img src="{{ STATIC_URL }}img/star_yellow.png"
-               width=16
-               height=16
+          <img src="{{ STATIC_URL }}img/rating.svg"
+               width="16px"
+               height="16px"
                alt="Bookmarked">
         {% else %}
           <a href="{% url 'add_address' %}?{% if addr.0 %}first_name={{addr.0|first_name}}&last_name={{addr.0|last_name}}&{% endif %}email={{addr.1}}&next={% url 'mailapp-message' folder=folder.url uid=uid %}">
-            <img src="{{ STATIC_URL }}img/star_empty.png"
-                 width=16
-                 height=16
+            <img src="{{ STATIC_URL }}img/rating-unrated.svg"
+                 width="16px"
+                 height="16px"
                  alt="Not bookmarked">
           </a>
         {% endifhasaddr %}

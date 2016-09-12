@@ -4,17 +4,18 @@
 {% block inpage_title %}{% trans "WebPyMail Login" %}{% endblock %}
 
 {% block contents %}
-<br />
+<br><br>
 <form method="post" action=".">{% csrf_token %}
 <center>
 <table>
 {{ form }}
 </table>
-<br />
+<br>
 <input type="submit" value="login" /></center>
 {% if error_message %}
-<p>{{ error_message }}{% endif %} 
+<p>{{ error_message }}{% endif %}
 {% if form.has_errors %}
 <p>Your username and password didn't match. Please try again.</p>{% endif %}
 </form>
+<br><br>
 {% endblock %}

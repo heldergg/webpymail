@@ -8,11 +8,13 @@
 {% endblock %}
 
 {% block extra_menus %}
-<a href="{% url 'folder_list' %}">{% trans "Folder List" %}</a>&nbsp;&nbsp;
+<a href="{% url 'folder_list' %}" title="{% trans "Folder List" %}">
+  <img class="top_menu_entry" src="{{ STATIC_URL }}img/folder.svg" width="32px" height="32px">
+</a>
 {% endblock %}
 
 {% block contents %}
-<h2>{% trans "Add new address" %}</h2>
+<h2>{% trans "Add/Edit address" %}</h2>
 <form method="post" action="?next={{ next }}">
   {% csrf_token %}
   <table class="msg_form" width="100%">

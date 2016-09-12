@@ -6,24 +6,30 @@
     <title>{% block title %}{% trans "WebPyMail" %}{% endblock %}</title>
     <meta charset="utf-8">
     <link href="{{ STATIC_URL }}css/normal.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.1.0.slim.min.js"></script>
+    <script src="/static/js/base.js"></script>
     {% block headercontent %}{% endblock %}
 </head>
 <body>
 
-<div id="header_main">
-    <div id="header_right">
-        <a href="{% url 'not_implemented' %}">{% trans "Options" %}</a>&nbsp;&nbsp;
-        <a href="{% url 'about' %}">{% trans "About" %}</a>&nbsp;&nbsp;
-        <a href="{% url 'logout' %}">{% trans "Logout" %}</a>
-    </div>
+<div id="menu_back"></div>
+<div id="toolbar_main">
+  <div class="toolbar_right">
     {% block extra_menus %}{% endblock %}
-    {# <a href="{% url 'mailapp_send_message' folder=folder.folder %}">{% trans "Compose" %}</a>&nbsp;&nbsp; #}
-    <a href="{% url 'not_implemented' %}">{% trans "Search" %}</a>&nbsp;&nbsp;
-    <a href="{% url 'not_implemented' %}">{% trans "Manage Folders" %}</a>&nbsp;&nbsp;
-    <a href="{% url 'browse_addresses' %}">{% trans "Addresses" %}</a>
+    <img id="main_menu_toggle" class="menu_button" src="{{ STATIC_URL }}img/menu.svg" width="32px" height="32px" title="{% trans "Menu" %}">
+  </div>
+  <h1>{% block inpage_title %}{% endblock %}</h1>
 </div>
-
-<h1>{% block inpage_title %}{% endblock %}</h1>
+<div id="main_menu" class="menu_dropdown">
+  <ul>
+    {% block main_menu %}{% endblock %}
+    <li><a href="{% url 'not_implemented' %}">{% trans "Options" %}</a>
+    <li><a href="{% url 'browse_addresses' %}">{% trans "Addresses" %}</a>
+    <li><hr></li>
+    <li><a href="{% url 'about' %}">{% trans "About" %}</a>
+    <li><a href="{% url 'logout' %}">{% trans "Logout" %}</a>
+  </ul>
+</div>
 
 <!-- The Main Body -->
 <div id="contents">{% block contents %}{% endblock %}
@@ -31,7 +37,7 @@
 
 <!-- Footer -->
 <div id="footer">
-    {% block footer %}{% trans "---- \O=o> ----" %}{% endblock %}
+  {% block footer %}{% trans "WebPyMail webmail client" %}{% endblock %}
 </div>
 
 {% block endscripts %}{% endblock %}

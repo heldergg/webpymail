@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 {% load loader_tags %}
 {% load i18n %}
 <html>
@@ -8,15 +8,18 @@
     <link href="{{ STATIC_URL }}css/normal.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
-<h1>{% block inpage_title %}{% endblock %}</h1>
+<div id="toolbar_main">
+  <h1>{% block inpage_title %}{% endblock %}</h1>
+</div>
 
 <!-- The Main Body -->
-<div id="contents">{% block contents %}{% endblock %}
+<div id="contents">
+  {% block contents %}{% endblock %}
 </div>
 
 <!-- Footer -->
 <div id="footer">
-    {% block footer %}{% trans "---- \O=o> ----" %}{% endblock %}
+  {% block footer %}{% trans "WebPyMail webmail client" %}{% endblock %}
 </div>
 
 {% block endscripts %}{% endblock %}
