@@ -10,7 +10,9 @@ from django.utils.translation import ugettext
 from django.forms.fields import Field, EMPTY_VALUES
 from django.core.files.uploadedfile import UploadedFile
 from django.forms.widgets import FileInput
-from django.forms.utils import ErrorList, ValidationError, flatatt
+from django.forms.utils import ValidationError
+from django.forms.utils import flatatt
+
 
 class MultiFileInput(FileInput):
     """
@@ -25,7 +27,7 @@ class MultiFileInput(FileInput):
         file boxes initially presented.
         """
         super(MultiFileInput, self).__init__(attrs)
-        self.attrs = {'count':1}
+        self.attrs = {'count': 1}
         if attrs:
             self.attrs.update(attrs)
 
@@ -35,9 +37,11 @@ class MultiFileInput(FileInput):
         Should not be overridden.  Instead, subclasses should override the
         js, link, and/or fields methods which provide content to this method.
         """
-        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name+'[]')
+        final_attrs = self.build_attrs(attrs, type=self.input_type,
+                                       name=name+'[]')
         count = final_attrs['count']
-        if count<1: count=1
+        if count < 1:
+            count = 1
         del final_attrs['count']
 
         js = self.js(name, value, count, final_attrs)
@@ -50,13 +54,16 @@ class MultiFileInput(FileInput):
         """
         Renders the necessary number of file input boxes.
         """
-        return ''.join(['<input%s />\n' % flatatt(dict(attrs, id=attrs['id']+str(i))) for i in range(count)])
+        return ''.join(['<input%s />\n' %
+                       flatatt(dict(attrs, id=attrs['id']+str(i)))
+                       for i in range(count)])
 
     def link(self, name, value, count, attrs=None):
         """
         Renders a link to add more file input boxes.
         """
-        return "<a onclick=\"javascript:new_%(name)s()\">+</a>" % {'name':name}
+        return ("<a onclick=\"javascript:new_%(name)s()\">+</a>" %
+                {'name': name})
 
     def js(self, name, value, count, attrs=None):
         """
@@ -74,7 +81,7 @@ class MultiFileInput(FileInput):
         }
         -->
         </script>
-        """ % {'id':attrs['id'], 'name':name, 'count':count}
+        """ % {'id': attrs['id'], 'name': name, 'count': count}
 
     def value_from_datadict(self, data, files, name):
         """
@@ -94,6 +101,7 @@ class MultiFileInput(FileInput):
             id_ += '0'
         return id_
     id_for_label = classmethod(id_for_label)
+
 
 class MultiFileField(Field):
     """
@@ -115,7 +123,7 @@ class MultiFileField(Field):
         Adds the count to the MultiFileInput widget.
         """
         if isinstance(widget, MultiFileInput):
-            return {'count':self.count}
+            return {'count': self.count}
         return {}
 
     def clean(self, data):
@@ -130,7 +138,9 @@ class MultiFileField(Field):
         try:
             f = [UploadedFile(a['filename'], a['content']) for a in data]
         except TypeError:
-            raise ValidationError(ugettext("No file was submitted. Check the encoding type on the form."))
+            raise ValidationError(
+                ugettext("No file was submitted. Check the "
+                         "encoding type on the form."))
         except KeyError:
             raise ValidationError(ugettext("No file was submitted."))
 
@@ -139,15 +149,18 @@ class MultiFileField(Field):
                 raise ValidationError(ugettext("The submitted file is empty."))
 
         if self.strict and len(f) != self.count:
-            raise ValidationError(ugettext("An incorrect number of files were uploaded."))
+            raise ValidationError(ugettext("An incorrect number of files "
+                                           "were uploaded."))
 
         return f
+
 
 class FixedMultiFileInput(MultiFileInput):
     """
     A MultiFileInput widget that doesn't print the javascript code to allow
     the user to add more file input boxes.
     """
+
     def link(self, name, value, count, attrs=None):
         return ''
 

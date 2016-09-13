@@ -3,20 +3,20 @@
 # hlimap - High level IMAP library
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of hlimap.
-##
-## hlimap is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## hlimap is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of hlimap.
+#
+# hlimap is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# hlimap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -29,9 +29,10 @@ import getpass
 
 from hlimap import ImapServer
 
-##
+#
 # Utility functions
-##
+#
+
 
 def server_login(host, port, ssl, user):
     """Login to the server
@@ -44,9 +45,10 @@ def server_login(host, port, ssl, user):
 
     return M
 
-##
+#
 # Main
-##
+#
+
 
 def usage():
     print('''Usage: %(script_name)s [command] [options]\n
@@ -75,14 +77,14 @@ def usage():
     Notes:
         The mailbox patern is a regular expression. To match all the folders
         an empty string might be used.
-    ''' % { 'script_name': sys.argv[0] })
+    ''' % {'script_name': sys.argv[0]})
 
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'ho:u:s:p:',
-            ['list-mailboxes=', 'mark-read=',
-            'host=', 'user=', 'security=', 'port=',
-            'help'])
+                                   ['list-mailboxes=', 'mark-read=',
+                                    'host=', 'user=', 'security=', 'port=',
+                                    'help'])
     except getopt.GetoptError as err:
         print(str(err))
         print()
@@ -109,7 +111,7 @@ if __name__ == '__main__':
                 sys.exit(1)
         elif o in ('-s', '--security'):
             security = a.upper()
-            if security not in ('TLS','SSL','NONE'):
+            if security not in ('TLS', 'SSL', 'NONE'):
                 print('The security type must be TLS, or SSL or None.')
                 sys.exit(2)
             if security == 'SSL' and port == 143:
@@ -144,9 +146,9 @@ if __name__ == '__main__':
                 folder.select()
                 message_list = folder.message_list
                 message_list.refresh_messages()
-                raw_message_list = [ uid for uid in
-                    message_list.flat_message_list ]
-                folder.set_flags( raw_message_list , r'\Seen')
+                raw_message_list = [uid for uid in
+                                    message_list.flat_message_list]
+                folder.set_flags(raw_message_list, r'\Seen')
             print('Done.')
 
             sys.exit()

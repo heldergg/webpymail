@@ -3,20 +3,20 @@
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of WebPyMail.
-##
-## WebPyMail is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## WebPyMail is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of WebPyMail.
+#
+# WebPyMail is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# WebPyMail is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -31,10 +31,11 @@ from django.utils.translation import gettext_lazy as _
 
 # Models:
 
+
 class UserIdentity(models.Model):
     profile = models.ForeignKey('UserProfile')
 
-    name  = models.CharField(
+    name = models.CharField(
         verbose_name=_('User name'),
         max_length=128,
         blank=True)
@@ -63,24 +64,26 @@ class UserIdentity(models.Model):
     citation_start = models.TextField(
         max_length=256,
         verbose_name=_('Citation start'),
-        blank = True)
+        blank=True)
 
     citation_end = models.TextField(
         max_length=256,
         verbose_name=_('Citation end'),
-        blank = True)
+        blank=True)
 
     def __unicode__(self):
         if self.name:
             return '"%s" <%s>' % (self.name, self.mail_address)
         else:
             return '<%s>' % (self.mail_address)
+
     class Admin:
         pass
 
     class Meta:
         verbose_name = _('Identity')
         verbose_name_plural = _('Identities')
+
 
 class UserProfile(models.Model):
     '''User configuration options.
@@ -101,6 +104,7 @@ class UserProfile(models.Model):
         verbose_name = _('User profile')
         verbose_name_plural = _('User profiles')
 
+
 class FoldersToExpand(models.Model):
     '''List of folders to expand. This table is managed from
     folder_views.py
@@ -108,13 +112,14 @@ class FoldersToExpand(models.Model):
     user = models.ForeignKey(User)
     folder_name = models.TextField(max_length=512)
 
+
 class Attachments(models.Model):
-    user     = models.ForeignKey(User)
+    user = models.ForeignKey(User)
     temp_file = models.TextField(max_length=128)
     filename = models.TextField(max_length=128)
     mime_type = models.TextField(max_length=128)
-    content_id = models.TextField(max_length=128, blank = True)
-    content_desc = models.TextField(max_length=128, blank = True)
+    content_id = models.TextField(max_length=128, blank=True)
+    content_desc = models.TextField(max_length=128, blank=True)
     show_inline = models.BooleanField(default=False)
     size = models.IntegerField(default=0)
     sent = models.BooleanField()

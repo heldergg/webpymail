@@ -4,20 +4,20 @@
 # imaplib module
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of imaplib2.
-##
-## imaplib2 is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## imaplib2 is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of imaplib2.
+#
+# imaplib2 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# imaplib2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -33,6 +33,7 @@ NOSELECT = r'\Noselect'
 HASCHILDREN = r'\HasChildren'
 HASNOCHILDREN = r'\HasNoChildren'
 
+
 class Mailbox(object):
     def __init__(self, path, attributes, delimiter):
         self.path = path
@@ -40,12 +41,12 @@ class Mailbox(object):
         self.attributes = attributes
 
         if delimiter:
-            self.parts = tuple( path.split(delimiter) )
+            self.parts = tuple(path.split(delimiter))
         else:
             self.parts = (path,)
 
     # Attributes
-    def test_attribute(self, attr ):
+    def test_attribute(self, attr):
         return attr in self.attributes
 
     def noselect(self):
@@ -55,13 +56,13 @@ class Mailbox(object):
         return self.test_attribute(HASCHILDREN)
 
     # Operators
-    def __eq__(self, y ):
+    def __eq__(self, y):
         '''Compares the mailbox name against a string or against another
         mailbox object.
         '''
-        if isinstance( y, Mailbox):
+        if isinstance(y, Mailbox):
             return self.__hash__() == y.__hash__()
-        elif isinstance( y, str):
+        elif isinstance(y, str):
             mailbox = self.path
             if mailbox.upper() == 'INBOX':
                 # INBOX should be case insensitive

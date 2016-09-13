@@ -1,20 +1,20 @@
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of WebPyMail.
-##
-## WebPyMail is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## WebPyMail is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of WebPyMail.
+#
+# WebPyMail is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# WebPyMail is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -24,19 +24,20 @@
 Django default settings for webpymail
 '''
 
-DEBUG=True
-
-##
-## BASE PATHS
-##
-
 import os.path
-PROJECT_DIR = os.path.abspath(os.path.join( os.path.dirname( __file__ ), '../..'))
-DJANGO_DIR = os.path.abspath(os.path.join( os.path.dirname( __file__ ), '..'))
 
-##
-## Site admins and security
-##
+DEBUG = True
+
+#
+# BASE PATHS
+#
+
+PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+DJANGO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+#
+# Site admins and security
+#
 
 ADMINS = (
     ('sysadm', 'sysadm@example.com'),
@@ -46,9 +47,9 @@ MANAGERS = ADMINS
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '8v7=r99a*pjt(c@es=7wc1q2#d8ycj1!j6*zoy@pdg2y8@b*wt'
 
-##
-## Time and Language
-##
+#
+# Time and Language
+#
 
 # Local time zone for this installation.
 # Choices can be found here:
@@ -72,9 +73,9 @@ USE_I18N = True
 # display numbers and dates using the format of the current locale.
 USE_L10N = True
 
-##
-## Static files
-##
+#
+# Static files
+#
 
 # media  = user generated content
 # static = site's static files
@@ -91,7 +92,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.join( PROJECT_DIR, 'collected_static' )
+STATIC_ROOT = os.path.join(PROJECT_DIR, 'collected_static')
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -105,14 +106,14 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
-##
-## Templates
-##
+#
+# Templates
+#
 
 TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': [ os.path.join(DJANGO_DIR, 'templates'), ],
+            'DIRS': [os.path.join(DJANGO_DIR, 'templates'), ],
             'APP_DIRS': True,
             'OPTIONS': {
                 'context_processors': [
@@ -130,9 +131,9 @@ TEMPLATES = [
             }
         ]
 
-##
-## Applications and middleware
-##
+#
+# Applications and middleware
+#
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -158,19 +159,19 @@ INSTALLED_APPS = (
     'themesapp',
 )
 
-##
-## DATABASE
-##
+#
+# DATABASE
+#
 
 # Database Setup:
-DATABASES = { 'default': { 'ENGINE': 'django.db.backends.sqlite3',
-                           'NAME': './webpymail.db',
+DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3',
+                         'NAME': './webpymail.db',
                          }
-            }
+             }
 
-##
-## Autentication and sessions
-##
+#
+# Autentication and sessions
+#
 
 # SESSIONS
 
@@ -186,39 +187,39 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     )
 
-LOGIN_URL  = '/auth/login/'
+LOGIN_URL = '/auth/login/'
 LOGOUT_URL = '/auth/logout/'
 
-##
-## Webpymail specific settings
-##
+#
+# Webpymail specific settings
+#
 
 DEFAULT_FOLDER = 'INBOX'
 
 # DISPLAY SETTINGS
 
 # TODO: this should be an user setting:
-MESSAGES_PAGE = 50 # Number of messages per page to display
+MESSAGES_PAGE = 50  # Number of messages per page to display
 
 # Mail compose form
 MAXADDRESSES = 50   # Maximum number of addresses that can be used on a To, Cc
-                    # or Bcc field.
+# or Bcc field.
 SINGLELINELEN = 60
 TEXTAREAROWS = 15
 TEXTAREACOLS = 60
 
 # Attachments
 
-TEMPDIR = '/tmp' # Temporary dir to store the attachements
+TEMPDIR = '/tmp'  # Temporary dir to store the attachements
 
 # User configuration directories:
-CONFIGDIR = os.path.join(DJANGO_DIR,'config')
+CONFIGDIR = os.path.join(DJANGO_DIR, 'config')
 USERCONFDIR = os.path.join(CONFIGDIR, 'users')
 SERVERCONFDIR = os.path.join(CONFIGDIR, 'servers')
-FACTORYCONF = os.path.join(CONFIGDIR,'factory.conf')
-DEFAULTCONF = os.path.join(CONFIGDIR,'defaults.conf')
-SERVERCONF  = os.path.join(CONFIGDIR,'servers.conf')
-SYSTEMCONF  = os.path.join(CONFIGDIR,'system.conf')
+FACTORYCONF = os.path.join(CONFIGDIR, 'factory.conf')
+DEFAULTCONF = os.path.join(CONFIGDIR, 'defaults.conf')
+SERVERCONF = os.path.join(CONFIGDIR, 'servers.conf')
+SYSTEMCONF = os.path.join(CONFIGDIR, 'system.conf')
 
 ###############################################
 # Do not change anything beyond this point... #
@@ -226,9 +227,9 @@ SYSTEMCONF  = os.path.join(CONFIGDIR,'system.conf')
 
 WEBPYMAIL_VERSION = 'GIT'
 
-##
-## LOCAL SETTINGS
-##
+#
+# LOCAL SETTINGS
+#
 
 try:
     from .local_settings import *

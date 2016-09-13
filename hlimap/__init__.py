@@ -3,20 +3,20 @@
 # hlimap - High level IMAP library
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of hlimap.
-##
-## hlimap is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## hlimap is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of hlimap.
+#
+# hlimap is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# hlimap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -50,14 +50,14 @@ ImapServer.login(username, password) - Authenticates against the server.
 
 ImapServer.set_special_folders(*folder_list) - stores the special folders, this
             information is used by the sort method. The special folders appear
-            first on the folder list. 
+            first on the folder list.
 
 ImapServer.set_expand_list(*folder_list) - stores the folders to expand. Just
             as with the special folders, this is used when iterating through
             the folders. Only the folders set to expand will have their sub
             folders displayed.
 
-ImapServer.refresh_folders(subscribed = True) - Extracts the folder list from 
+ImapServer.refresh_folders(subscribed = True) - Extracts the folder list from
             the server. Retrieving the folder list is a lazy operation. If we
             want to access a single folder, we simply select it, so it's not
             necessary to retrieve the complete list.
@@ -65,10 +65,10 @@ ImapServer.refresh_folders(subscribed = True) - Extracts the folder list from
 ImapServer.set_folder_iterator() -  Sets the iterator to use when going through
             the folders. There are available several iterators defined on the
             FolderTree class.
-            TODO: This iterator selection mechanism should be remade. This 
-            method is used only internally to the ImapServer class, however it's
-            useful to change the iterator on the fly (that was the original
-            objective), the current method is awkward.
+            TODO: This iterator selection mechanism should be remade. This
+            method is used only internally to the ImapServer class, however
+            it's useful to change the iterator on the fly (that was the
+            original objective), the current method is awkward.
 
 ImapServer.__del__() - logs out of the imap server when the ImapServer instance
             is deleted.
@@ -118,7 +118,7 @@ Example Usage
 Server Level
 ------------
 
-First we have to create an instance of L{ImapServer<ImapServer>}, and login only
-the server:
+First we have to create an instance of L{ImapServer<ImapServer>}, and login
+only the server:
 
 '''

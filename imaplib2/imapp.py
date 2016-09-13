@@ -4,20 +4,20 @@
 # imaplib module
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of imaplib2.
-##
-## imaplib2 is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## imaplib2 is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of imaplib2.
+#
+# imaplib2 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# imaplib2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -54,17 +54,19 @@ IMAP4_SSL_PORT = 993
 MAXLOG = 100
 CRLF = '\r\n'
 SP = ' '
-MAXCLILEN = 16384 # max command line lenght accepted by the IMAP server
+MAXCLILEN = 16384  # max command line lenght accepted by the IMAP server
 
 # Regexp
 opt_respcode_re = re.compile(r'^\[(?P<code>[a-zA-Z0-9-]+)(?P<args>.*?)\].*$')
-response_re = re.compile(r'^(?P<code>[a-zA-Z0-9-]+)(?P<args>.*)$', re.MULTILINE)
+response_re = re.compile(r'^(?P<code>[a-zA-Z0-9-]+)(?P<args>.*)$',
+                         re.MULTILINE)
 fetch_msgnum_re = re.compile(r'^(\d+) ')
 fetch_data_items_re = re.compile(r'^([a-zA-Z0-9\[\]<>\.]+) ')
 fetch_flags_re = re.compile(r'^\((.*?)\) ?')
 fetch_int_re = re.compile(r'^(\d+) ?')
 fetch_quoted_re = re.compile(r'^"(.*?)" ?')
 map_crlf_re = re.compile(r'\r\n|\r|\n')
+
 
 class IMAP4P:
     '''
@@ -74,8 +76,8 @@ class IMAP4P:
     dictionary.
 
     For instance, when we select a mailbox on the server, the related responses
-    are stored in <instance>.sstatus['current_folder']. If we close this mailbox
-    <instance>.sstatus['current_folder'] reverts to {}.
+    are stored in <instance>.sstatus['current_folder']. If we close this
+    mailbox <instance>.sstatus['current_folder'] reverts to {}.
 
     Besides putting the server responses on this structure, other usefull
     information is also stored there. For instance, under 'current_folder' we
@@ -89,8 +91,8 @@ class IMAP4P:
     The IMAP commands implemented on this class follow RFC3501 unless otherwise
     noted.
 
-    TODO: Think about transforming the IMAP4P.sstatus so that we can also define
-    callbacks when certain values change on this structure.
+    TODO: Think about transforming the IMAP4P.sstatus so that we can also
+          define callbacks when certain values change on this structure.
 
     The <instance>.sstatus dict as the following empty state::
 
@@ -124,23 +126,19 @@ class IMAP4P:
 
     class Error(Exception):
         '''Logical errors - debug required'''
-        pass
     class Abort(Exception):
         '''Service errors - close and retry'''
-        pass
     class ReadOnly(Exception):
         '''Mailbox status changed to READ-ONLY'''
 
-        pass
-
     def __init__(self,
-            host,
-            port=None,
-            ssl = False,
-            keyfile = None,
-            certfile = None,
-            infolog = InfoLog(MAXLOG),
-            autologout = True ):
+                 host,
+                 port=None,
+                 ssl=False,
+                 keyfile=None,
+                 certfile=None,
+                 infolog=InfoLog(MAXLOG),
+                 autologout=True):
 
         # Choose the right connection, and then connect to the server
         self.autologout = autologout
@@ -152,17 +150,16 @@ class IMAP4P:
 
         try:
             if ssl:
-                self.__IMAP4 = IMAP4_SSL( host = host, port = port,
-                    keyfile = keyfile, certfile = certfile,
-                    parse_command = self.parse_command )
+                self.__IMAP4 = IMAP4_SSL(host=host, port=port,
+                                         keyfile=keyfile, certfile=certfile,
+                                         parse_command=self.parse_command)
             else:
-                self.__IMAP4 = IMAP4( host = host, port = port,
-                    parse_command = self.parse_command )
+                self.__IMAP4 = IMAP4(host=host, port=port,
+                                     parse_command=self.parse_command)
             self.connected = True
         except socket.gaierror:
             self.connected = False
             raise
-
 
         # Wrap IMAP4
         self.welcome = self.__IMAP4.welcome
@@ -200,7 +197,7 @@ class IMAP4P:
                 return True
         return False
 
-    def is_expunged(self, ID ):
+    def is_expunged(self, ID):
         '''Returns True if message id is expunged
         '''
         if 'expunge_list' in self.sstatus['current_folder']:
@@ -226,17 +223,17 @@ class IMAP4P:
             if status in ('OK', 'NO', 'BAD'):
                 if status == 'OK':
                     # Information, update the server info log
-                    self.infolog.addEntry('OK', tagged )
+                    self.infolog.addEntry('OK', tagged)
                 elif status == 'NO':
                     # Server operational error, the command failed
-                    self.infolog.addEntry('NO', tagged )
+                    self.infolog.addEntry('NO', tagged)
                 elif status == 'BAD':
-                    self.infolog.addEntry('BAD', tagged )
-                    raise self.Error('Protocol-level error, check the '
-                        'command syntaxe. \n%s' % (makeTagged(tagged)))
+                    self.infolog.addEntry('BAD', tagged)
+                    raise self.Error('Protocol-level error, check the command '
+                                     'syntaxe. \n%s' % (makeTagged(tagged)))
             else:
                 raise self.Error('Bad response status from '
-                    'the server. \n%s' % (makeTagged(tagged)))
+                                 'the server. \n%s' % (makeTagged(tagged)))
 
             # Check if there are optional response codes:
             self.parse_optional_codes(tagged['message'])
@@ -260,7 +257,7 @@ class IMAP4P:
                     int(code)
                     resp2 = response_re.match(args)
                     code, args = resp2.group('code').upper(), \
-                                 (code + args[resp2.start('args'):]).strip()
+                        (code + args[resp2.start('args'):]).strip()
                 except:
                     pass
 
@@ -294,9 +291,9 @@ class IMAP4P:
             if code not in STATUS:
                 if __debug__:
                     if Debug & D_NOTPARSED:
-                        print('Don\'t know how to handle optional code:\n%s'% \
-                            message)
-                return # Silently ignore unknown OPTIONAL codes
+                        print('Don\'t know how to handle optional code:\n%s' %
+                              message)
+                return  # Silently ignore unknown OPTIONAL codes
 
             # Integer responses:
             try:
@@ -308,7 +305,7 @@ class IMAP4P:
             # Parenthesised list
             try:
                 if args[0] == '(' and args[-1] == ')':
-                    args = tuple( args[1:-1].split() )
+                    args = tuple(args[1:-1].split())
                     self.sstatus['current_folder'][code.upper()] = args
                     return
             except:
@@ -320,12 +317,12 @@ class IMAP4P:
             elif code == 'READ-WRITE':
                 self.sstatus['current_folder']['is_readonly'] = False
             elif code in ('ALERT', 'TRYCREATE', 'PARSE'):
-                self.infolog.addEntry(code, message )
+                self.infolog.addEntry(code, message)
             elif code == 'CAPABILITY':
-                self.CAPABILITY_response( code, args)
+                self.CAPABILITY_response(code, args)
             else:
-                raise self.Error('Don\'t know how to parse  %s - %s' % \
-                    (code, args))
+                raise self.Error('Don\'t know how to parse  %s - %s' %
+                                 (code, args))
 
     def ACL_response(self, code, args):
         response = scan_sexp(args)
@@ -333,15 +330,15 @@ class IMAP4P:
         it = iter(response[1:])
         acl = dict(list(zip(it, it)))
 
-        self.sstatus['acl_response'] = { 'mailbox': response[0],
-                                        'acl': acl }
+        self.sstatus['acl_response'] = {'mailbox': response[0],
+                                        'acl': acl}
 
     def BYE_response(self, code, args):
         self.parse_optional_codes(args)
-        self.infolog.addEntry(code, args )
+        self.infolog.addEntry(code, args)
 
     def CAPABILITY_response(self, code, args):
-        self.sstatus['capability'] = tuple( args.upper().split() )
+        self.sstatus['capability'] = tuple(args.upper().split())
 
     def EXISTS_response(self, code, args):
         self.sstatus['current_folder']['EXISTS'] = int(args)
@@ -378,19 +375,19 @@ class IMAP4P:
             self.sstatus['fetch_response'][msg_num] = response
 
     def FLAGS_response(self, code, args):
-        args = tuple( args[1:-1].split() )
-        self.sstatus['current_folder'][code.upper()] =  args
+        args = tuple(args[1:-1].split())
+        self.sstatus['current_folder'][code.upper()] = args
 
     def LIST_response(self, code, args):
-        resp = scan_sexp( args )
+        resp = scan_sexp(args)
 
         try:
-            attributes =  resp[0]
+            attributes = resp[0]
             hierarchy_delimiter = resp[1]
             name = resp[2]
         except:
-            raise self.Error('Don\'t know how to parse the LIST response: %s' %\
-                args )
+            raise self.Error('Don\'t know how to parse the LIST response: %s' %
+                             args)
 
         # If the hierarchy_delimiter is NIL no hierarchy exists
         if hierarchy_delimiter != 'NIL':
@@ -398,30 +395,30 @@ class IMAP4P:
         else:
             hierarchy_delimiter = None
 
-        self.sstatus['list_response'].append( parselist.Mailbox(
-            name, attributes, hierarchy_delimiter ))
+        self.sstatus['list_response'].append(parselist.Mailbox(
+            name, attributes, hierarchy_delimiter))
 
     LSUB_response = LIST_response
 
     def LISTRIGHTS_response(self, code, args):
 
-        response = scan_sexp( args )
+        response = scan_sexp(args)
 
         self.sstatus['listrights_response'] = {
             'mailbox': response[0],
             'identifier': response[1],
             'req_rights': response[2],
-            'opt_rights': tuple(response[3]) }
+            'opt_rights': tuple(response[3])}
 
     def MYRIGHTS_response(self, code, args):
-        response = scan_sexp( args )
+        response = scan_sexp(args)
 
         self.sstatus['myrights_response'] = {
             'mailbox': response[0],
-            'rights': response[1] }
+            'rights': response[1]}
 
     def NAMESPACE_response(self, code, args):
-        response = scan_sexp( args )
+        response = scan_sexp(args)
         self.sstatus['namespace'] = response
 
     def OK_response(self, code, args):
@@ -431,15 +428,15 @@ class IMAP4P:
         self.sstatus['current_folder']['RECENT'] = int(args)
 
     def SEARCH_response(self, code, args):
-        self.sstatus['search_response'] = tuple([ int(Xi)
-            for Xi in args.split()])
+        self.sstatus['search_response'] = tuple([int(Xi)
+                                                 for Xi in args.split()])
 
     def SORT_response(self, code, args):
-        self.sstatus['sort_response'] = tuple([ int(Xi)
-            for Xi in args.split() ])
+        self.sstatus['sort_response'] = tuple([int(Xi)
+                                               for Xi in args.split()])
 
     def THREAD_response(self, code, args):
-        response = scan_sexp( args )
+        response = scan_sexp(args)
         self.sstatus['thread_response'] = response
 
     def STATUS_response(self, code, args):
@@ -456,12 +453,12 @@ class IMAP4P:
     def _test_command(self, name):
         if self.state not in COMMANDS[name]:
             raise self.Error(
-            'command %s illegal in state %s' % (name, self.state))
+                'command %s illegal in state %s' % (name, self.state))
 
     def _checkok(self, tag, response):
         return response['tagged'][tag]['status'] == 'OK'
 
-    def processCommand(self, name, args = None ):
+    def processCommand(self, name, args=None):
         '''Processes the current comand.
 
         @param name: Valid IMAP4 command.
@@ -488,8 +485,8 @@ class IMAP4P:
         if self._checkok(tag, response):
             return self.sstatus
         else:
-            raise self.Error('Error in command %s - %s' % (name,
-                response['tagged'][tag]['message']))
+            raise self.Error('Error in command %s - %s' %
+                             (name, response['tagged'][tag]['message']))
 
     ##
     # IMAP Commands
@@ -502,7 +499,7 @@ class IMAP4P:
         name = 'APPEND'
 
         message = map_crlf_re.sub(CRLF, message)
-        message = '{%d}%s%s' % (len(message), CRLF, message )
+        message = '{%d}%s%s' % (len(message), CRLF, message)
 
         aux_args = []
 
@@ -519,9 +516,9 @@ class IMAP4P:
         else:
             args = '"%s" %s' % (mailbox, message)
 
-        return self.processCommand( name, args )
+        return self.processCommand(name, args)
 
-    def authenticate(self, mech, authobject ):
+    def authenticate(self, mech, authobject):
         '''
         Send an AUTHENTICATE command to the server.
 
@@ -547,15 +544,15 @@ class IMAP4P:
 
         try:
             if isinstance(authobject, str):
-                self.push_continuation( authobject )
+                self.push_continuation(authobject)
             else:
                 for obj in authobject:
-                    self.push_continuation( obj )
+                    self.push_continuation(obj)
         except:
             self.push_continuation(authobject)
 
         try:
-            self.processCommand( name, mech )
+            self.processCommand(name, mech)
             self.state = 'AUTH'
         except:
             raise self.Error('Could not login.')
@@ -570,14 +567,14 @@ class IMAP4P:
 
         self.sstatus['capability'] = ''
 
-        return self.processCommand( name )['capability']
+        return self.processCommand(name)['capability']
 
     def check(self):
         '''Requests a checkpoint of the currently selected mailbox'''
 
         name = 'CHECK'
 
-        return self.processCommand( name )
+        return self.processCommand(name)
 
     def close(self):
         '''Close currently selected mailbox. It expunges the mailbox
@@ -589,35 +586,35 @@ class IMAP4P:
         name = 'CLOSE'
 
         try:
-            self.processCommand( name )
+            self.processCommand(name)
         finally:
             self.state = 'AUTH'
 
         return self.sstatus
 
-    def copy_seq(self, message_list, mailbox ):
+    def copy_seq(self, message_list, mailbox):
         '''Copy messages to mailbox'''
 
         name = 'COPY'
 
-        message_list = ','.join( '%s' % Xi for Xi in message_list)
+        message_list = ','.join('%s' % Xi for Xi in message_list)
         args = ' %s "%s"' % (message_list, mailbox)
 
-        return self.processCommand( name, args )
+        return self.processCommand(name, args)
 
     def create(self, mailbox):
         '''Create new mailbox.'''
 
         name = 'CREATE'
 
-        return self.processCommand( name, '"%s"' % mailbox )
+        return self.processCommand(name, '"%s"' % mailbox)
 
     def delete(self, mailbox):
         '''Delete a mailbox.'''
 
         name = 'DELETE'
 
-        return self.processCommand( name, '"%s"' % mailbox )
+        return self.processCommand(name, '"%s"' % mailbox)
 
     def deleteacl(self, mailbox, identifier):
         '''The DELETEACL command removes any <identifier,rights> pair for the
@@ -630,7 +627,7 @@ class IMAP4P:
         '''
         name = 'DELETEACL'
 
-        return self.processCommand( name, '"%s" %s' % (mailbox, identifier))
+        return self.processCommand(name, '"%s" %s' % (mailbox, identifier))
 
     def expunge(self):
         '''Permanently remove deleted items from selected mailbox.
@@ -642,9 +639,9 @@ class IMAP4P:
 
         self.sstatus['current_folder']['expunge_list'] = []
 
-        return self.processCommand( name )['current_folder']['expunge_list']
+        return self.processCommand(name)['current_folder']['expunge_list']
 
-    def _fetch(self, uid, message_list, message_parts='(FLAGS)' ):
+    def _fetch(self, uid, message_list, message_parts='(FLAGS)'):
         '''Fetch (parts of) messages'''
 
         if uid:
@@ -666,12 +663,12 @@ class IMAP4P:
             if not message_list:
                 raise self.Error('Can\'t fetch an empty message list.')
 
-            shrinked_list = shrink_fetch_list( message_list )
-            message_list = ','.join( '%s' % Xi for Xi in shrinked_list )
+            shrinked_list = shrink_fetch_list(message_list)
+            message_list = ','.join('%s' % Xi for Xi in shrinked_list)
 
             # Worst case cenario command lenght
-            command_len = len( 'UID FETCH %s %s' % (message_list,
-                message_parts)) + 2
+            command_len = len('UID FETCH %s %s' % (message_list,
+                                                   message_parts)) + 2
 
             if command_len > MAXCLILEN:
                 shrinked_list = list(shrinked_list)
@@ -687,9 +684,9 @@ class IMAP4P:
                         # Make a partial fetch
                         shrinked_list.append(msg)
                         args = '%s %s' % (message_list.strip(','),
-                            message_parts)
+                                          message_parts)
                         tmp_result = process_command(name,
-                            args)['fetch_response']
+                                                     args)['fetch_response']
 
                         # Merge the results:
                         for key in tmp_result:
@@ -698,9 +695,9 @@ class IMAP4P:
 
                 if message_list:
                     args = '%s %s' % (message_list.strip(','),
-                        message_parts)
+                                      message_parts)
                     tmp_result = process_command(name,
-                        args)['fetch_response']
+                                                 args)['fetch_response']
                     for key in tmp_result:
                         result[key] = tmp_result[key]
 
@@ -710,13 +707,13 @@ class IMAP4P:
             message_list = message_list.strip()
 
         if not message_list:
-            raise Error('Can\'t fetch an empty message list.')
+            raise self.Error('Can\'t fetch an empty message list.')
         args = '%s %s' % (message_list,  message_parts)
         return process_command(name, args)['fetch_response']
 
-    def fetch_seq(self, message_list, message_parts='(FLAGS)' ):
+    def fetch_seq(self, message_list, message_parts='(FLAGS)'):
         '''Fetch (parts of) messages.'''
-        return self._fetch( False, message_list, message_parts )
+        return self._fetch(False, message_list, message_parts)
 
     def getacl(self, mailbox):
         '''Get the ACLs for a mailbox.
@@ -728,10 +725,10 @@ class IMAP4P:
 
         name = 'GETACL'
 
-        self.sstatus['acl_response'] = { 'mailbox': mailbox,
-                                        'acl': {} }
+        self.sstatus['acl_response'] = {'mailbox': mailbox,
+                                        'acl': {}}
 
-        return self.processCommand( name, '"%s"' % mailbox )['acl_response']
+        return self.processCommand(name, '"%s"' % mailbox)['acl_response']
 
     def list(self, directory='', pattern='*'):
         '''List mailbox names in directory matching pattern.
@@ -741,8 +738,8 @@ class IMAP4P:
 
         self.sstatus['list_response'] = []
 
-        return self.processCommand( name, '"%s" "%s"' % ( directory,
-            pattern ))['list_response']
+        return self.processCommand(name, '"%s" "%s"' %
+                                   (directory, pattern))['list_response']
 
     def listrights(self, mailbox, identifier):
         '''LISTRIGHTS command takes a mailbox name and an identifier and
@@ -756,13 +753,14 @@ class IMAP4P:
 
         name = 'LISTRIGHTS'
 
-        self.sstatus['listrights_response'] = { 'mailbox': '',
+        self.sstatus['listrights_response'] = {'mailbox': '',
                                                'identifier': '',
                                                'req_rights': '',
-                                               'opt_rights': () }
+                                               'opt_rights': ()}
 
-        return self.processCommand( name, '"%s" %s' % (mailbox,
-            identifier))['listrights_response']
+        return self.processCommand(name, '"%s" %s' %
+                                   (mailbox,
+                                    identifier))['listrights_response']
 
     def login(self, user, password):
         """Identify client using plaintext password.
@@ -772,7 +770,7 @@ class IMAP4P:
         name = 'LOGIN'
 
         try:
-            self.processCommand( name, '%s \"%s\"' % (user, password))
+            self.processCommand(name, '%s \"%s\"' % (user, password))
             self.state = 'AUTH'
         except:
             raise self.Error('Could not login.')
@@ -789,30 +787,30 @@ class IMAP4P:
         '''Login using PLAIN mech. Must have AUTH=PLAIN capability.
         '''
         import base64
-        auth_tokens = base64.b64encode('%s\0%s\0%s' % (user,user,password))
+        auth_tokens = base64.b64encode('%s\0%s\0%s' % (user, user, password))
 
-        return self.authenticate('PLAIN', auth_tokens )
+        return self.authenticate('PLAIN', auth_tokens)
 
     def login_login(self, user, password):
         '''Login using LOGIN mech. Must have AUTH=LOGIN capability.
         '''
         import base64
-        auth_tokens = [ base64.b64encode(user), base64.b64encode(password) ]
+        auth_tokens = [base64.b64encode(user), base64.b64encode(password)]
 
-        return self.authenticate('LOGIN', auth_tokens )
+        return self.authenticate('LOGIN', auth_tokens)
 
     def logout(self):
         '''
         '''
         name = 'LOGOUT'
         self.state = 'LOGOUT'
-        return self.processCommand( name )
+        return self.processCommand(name)
 
     def _CRAM_MD5_AUTH(self, challenge):
         ''' Authobject to use with CRAM-MD5 authentication.'''
         import hmac
         response = (self.user + " " +
-            hmac.HMAC(self.password, challenge).hexdigest())
+                    hmac.HMAC(self.password, challenge).hexdigest())
 
         del self.user
         del self.password
@@ -826,8 +824,8 @@ class IMAP4P:
 
         self.sstatus['list_response'] = []
 
-        return self.processCommand( name, '"%s" "%s"' % ( directory,
-            pattern ))['list_response']
+        return self.processCommand(name, '"%s" "%s"' %
+                                   (directory, pattern))['list_response']
 
     def myrights(self, mailbox):
         '''The MYRIGHTS command returns the set of rights that the user has to
@@ -839,11 +837,11 @@ class IMAP4P:
         '''
         name = 'MYRIGHTS'
 
-        self.sstatus['myrights_response'] = { 'mailbox': '',
-                                             'rights': '' }
+        self.sstatus['myrights_response'] = {'mailbox': '',
+                                             'rights': ''}
 
-        return self.processCommand( name,
-            '"%s"' % (mailbox))['myrights_response']
+        return self.processCommand(name,
+                                   '"%s"' % (mailbox))['myrights_response']
 
     def namespace(self):
         '''
@@ -851,34 +849,34 @@ class IMAP4P:
         name = 'NAMESPACE'
         self.sstatus['namespace'] = ''
 
-        return self.processCommand( name )['namespace']
+        return self.processCommand(name)['namespace']
 
     def noop(self):
         '''NOOP the server'''
         name = 'NOOP'
 
-        return self.processCommand( name )
+        return self.processCommand(name)
 
     def rename(self, oldmailbox, newmailbox):
         '''
         '''
         name = 'RENAME'
 
-        return self.processCommand( name, '"%s" "%s"' % (oldmailbox,
-            newmailbox))
+        return self.processCommand(name, '"%s" "%s"' % (oldmailbox,
+                                                        newmailbox))
 
     def search_seq(self, criteria, charset=None):
         '''Search mailbox for matching messages'''
         name = 'SEARCH'
         self.sstatus['search_response'] = ()
         if charset:
-            args = 'CHARSET %s %s' % ( charset, criteria)
+            args = 'CHARSET %s %s' % (charset, criteria)
         else:
             args = '%s' % criteria
 
-        return self.processCommand( name, args)['search_response']
+        return self.processCommand(name, args)['search_response']
 
-    def select(self, folder, readonly=False ):
+    def select(self, folder, readonly=False):
         '''Selects a folder
         '''
         if readonly:
@@ -888,7 +886,7 @@ class IMAP4P:
 
         self.sstatus['current_folder'] = {}
 
-        self.processCommand( name, '"%s"' % folder)
+        self.processCommand(name, '"%s"' % folder)
 
         self.sstatus['current_folder']['name'] = folder
         self.state = 'SELECTED'
@@ -909,8 +907,8 @@ class IMAP4P:
         '''
         name = 'SETACL'
 
-        return self.processCommand( name, '"%s" %s %s' % (mailbox, identifier,
-            acl))
+        return self.processCommand(name, '"%s" %s %s' % (mailbox, identifier,
+                                                         acl))
 
     def sort_seq(self, program, charset, search_criteria):
         '''The SORT command is a variant of SEARCH with sorting semantics for
@@ -925,8 +923,10 @@ class IMAP4P:
 
         self.sstatus['sort_response'] = ()
 
-        return self.processCommand( name, '%s %s %s' % (program, charset,
-            search_criteria))['sort_response']
+        return self.processCommand(name, '%s %s %s' %
+                                   (program,
+                                    charset,
+                                    search_criteria))['sort_response']
 
     def status(self, mailbox, names):
         '''The STATUS command requests the status of the indicated mailbox.
@@ -935,8 +935,8 @@ class IMAP4P:
 
         self.sstatus['status_response'] = {}
 
-        return self.processCommand( name, '"%s" %s' % (mailbox,
-            names))['status_response']
+        return self.processCommand(name, '"%s" %s' %
+                                   (mailbox, names))['status_response']
 
     def store_seq(self, message_set, command, flags):
         '''Alters flag dispositions for messages in mailbox.
@@ -971,17 +971,17 @@ class IMAP4P:
         flags = '(%s)' % ' '.join(flags)
 
         if isinstance(message_set, list):
-            message_set = ','.join( '%s' % Xi for Xi in message_set)
+            message_set = ','.join('%s' % Xi for Xi in message_set)
 
-        return self.processCommand( name, '%s %s %s' % (message_set,
-            command, flags ))
+        return self.processCommand(name, '%s %s %s' % (message_set,
+                                                       command, flags))
 
     def subscribe(self, mailbox):
         '''
         '''
         name = 'SUBSCRIBE'
 
-        return self.processCommand( name, '"%s"' % mailbox )
+        return self.processCommand(name, '"%s"' % mailbox)
 
     def thread_seq(self, thread_alg, charset, search_criteria):
         '''The THREAD command is a variant of SEARCH with threading semantics
@@ -996,15 +996,17 @@ class IMAP4P:
 
         self.sstatus['thread_response'] = ()
 
-        return self.processCommand( name, '%s %s %s' % (thread_alg, charset,
-            search_criteria))['thread_response']
+        return self.processCommand(name, '%s %s %s' %
+                                   (thread_alg,
+                                    charset,
+                                    search_criteria))['thread_response']
 
     def uid(self, command, args):
         '''UID based commands
         '''
         name = 'UID'
 
-        return self.processCommand( name, '%s %s' % (command, args))
+        return self.processCommand(name, '%s %s' % (command, args))
 
     def unselect(self):
         '''Unselects a folder, same as the close command but does
@@ -1015,7 +1017,7 @@ class IMAP4P:
         name = 'UNSELECT'
 
         try:
-            self.processCommand( name )
+            self.processCommand(name)
         finally:
             self.state = 'AUTH'
 
@@ -1026,13 +1028,13 @@ class IMAP4P:
         '''
         name = 'UNSUBSCRIBE'
 
-        return self.processCommand( name, '"%s"' % (mailbox))
+        return self.processCommand(name, '"%s"' % (mailbox))
 
     ##
     # Helper methods
     ##
 
-    def has_capability(self, capability ):
+    def has_capability(self, capability):
         '''Checks if the server has a given capability.
 
         @param capability: capability to test
@@ -1044,8 +1046,8 @@ class IMAP4P:
 
         return capability in self.capabilities
 
-    ## UID commands
-    def processCommandUID( self, name, args ):
+    # UID commands
+    def processCommandUID(self, name, args):
         '''Process commands using the UID alternatives
         '''
         self._test_command('UID')
@@ -1060,21 +1062,21 @@ class IMAP4P:
         if self._checkok(tag, response):
             return self.sstatus
         else:
-            raise self.Error('Error in command UID %s - %s' % (name,
-                response['tagged'][tag]['message']))
+            raise self.Error('Error in command UID %s - %s' %
+                             (name, response['tagged'][tag]['message']))
 
-    def copy_uid(self, message_set, mailbox ):
+    def copy_uid(self, message_set, mailbox):
         '''Copy messages to mailbox'''
 
         name = 'COPY'
 
         if isinstance(message_set, list):
             message_set = shrink_fetch_list(message_set)
-            message_set = ','.join( '%s' % Xi for Xi in message_set)
+            message_set = ','.join('%s' % Xi for Xi in message_set)
 
         args = '%s "%s"' % (message_set, mailbox)
 
-        return self.processCommandUID(name, args )
+        return self.processCommandUID(name, args)
 
     def store_uid(self, message_set, command, flags):
         '''Alters flag dispositions for messages in mailbox UID version.
@@ -1085,16 +1087,16 @@ class IMAP4P:
         flags = '(' + ' '.join(flags) + ')'
 
         if isinstance(message_set, list):
-            message_set = shrink_fetch_list( message_set )
-            message_set = ','.join( '%s' % Xi for Xi in message_set)
-        args = '%s %s %s' % (message_set, command, flags )
+            message_set = shrink_fetch_list(message_set)
+            message_set = ','.join('%s' % Xi for Xi in message_set)
+        args = '%s %s %s' % (message_set, command, flags)
 
-        result = self.processCommandUID( name, args)
+        result = self.processCommandUID(name, args)
         return result
 
-    def fetch_uid(self, message_list, message_parts='(FLAGS)' ):
+    def fetch_uid(self, message_list, message_parts='(FLAGS)'):
         '''Fetch (parts of) messages, UID version.'''
-        return self._fetch( True, message_list, message_parts )
+        return self._fetch(True, message_list, message_parts)
 
     def search_uid(self, criteria, charset=None):
         '''SEARCH command UID version'''
@@ -1122,9 +1124,9 @@ class IMAP4P:
         name = 'THREAD'
         self.sstatus['thread_response'] = ()
         args = '%s %s %s' % (thread_alg, charset, search_criteria)
-        return self.processCommandUID( name, args)['thread_response']
+        return self.processCommandUID(name, args)['thread_response']
 
-    ## SMART commands
+    # SMART commands
 
     def _checkSort(self):
         if self.has_sort is None:
@@ -1134,12 +1136,12 @@ class IMAP4P:
         if self.has_uid is None:
             self.has_uid = self.has_capability('IMAP4REV1')
 
-    def copy(self, message_list, mailbox ):
+    def copy(self, message_list, mailbox):
         self._checkUid()
         if self.has_uid:
-            return self.copy_uid(message_list, mailbox )
+            return self.copy_uid(message_list, mailbox)
         else:
-            return self.copy_seq(message_list, mailbox )
+            return self.copy_seq(message_list, mailbox)
 
     def store(self, message_set, command, flags):
         self._checkUid()
@@ -1170,21 +1172,20 @@ class IMAP4P:
             else:
                 return self.search_seq(search_criteria, charset)
 
-    def search( self, criteria, charset=None):
+    def search(self, criteria, charset=None):
         self._checkUid()
         if self.has_uid:
             return self.search_uid(criteria, charset)
         else:
             return self.search_seq(criteria, charset)
 
-
-    def fetch(self, message_list, message_parts='(FLAGS)' ):
+    def fetch(self, message_list, message_parts='(FLAGS)'):
         self._checkUid()
 
         if self.has_uid:
-            return self.fetch_uid( message_list, message_parts )
+            return self.fetch_uid(message_list, message_parts)
         else:
-            return self.fetch_seq( message_list, message_parts )
+            return self.fetch_seq(message_list, message_parts)
 
     def thread(self, thread_alg, charset, search_criteria):
         self._checkUid()
@@ -1194,7 +1195,9 @@ class IMAP4P:
             return self.thread_seq(thread_alg, charset, search_criteria)
 
 if __name__ == '__main__':
-    import getopt, getpass, sys
+    import getopt
+    import getpass
+    import sys
 
     try:
         optlist, args = getopt.getopt(sys.argv[1:], 'd:s:')
@@ -1203,14 +1206,16 @@ if __name__ == '__main__':
 
     Debug = D_NOTPARSED
 
-    if not args: args = ('',)
+    if not args:
+        args = ('',)
 
     host = args[0]
 
     USER = getpass.getuser()
-    PASSWD = getpass.getpass("IMAP password for %s on %s: " % (USER, host or "localhost"))
+    PASSWD = getpass.getpass("IMAP password for %s on %s: " %
+                             (USER, host or "localhost"))
 
-    M = IMAP4P( host )
+    M = IMAP4P(host)
 
     M.login(USER, PASSWD)
     M.capability()
@@ -1220,5 +1225,3 @@ if __name__ == '__main__':
 
     import pprint
     pprint.pprint(M.sstatus)
-
-

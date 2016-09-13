@@ -3,20 +3,20 @@
 # sabapp - Simple Address Book Application
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of sabapp.
-##
-## sabapp is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## sabapp is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with sabapp.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of sabapp.
+#
+# sabapp is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# sabapp is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with sabapp.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -26,17 +26,17 @@ from django import template
 from django.template import Node, NodeList
 from django.template import Variable
 from django.template.defaultfilters import stringfilter
-from django.utils.translation import gettext_lazy as _
 
 from sabapp.models import Address
 
 register = template.Library()
 
+
 @register.tag(name="ifhasaddr")
 def do_has_addr(parser, token):
     try:
         addr = token.split_contents()[1]
-    except  ValueError:
+    except ValueError:
         raise template.TemplateSyntaxError(
             'ifhasaddr tag requires one argument: a tupple ("name", "email" )')
 
@@ -48,6 +48,7 @@ def do_has_addr(parser, token):
     else:
         nodelist_false = NodeList()
     return IfHasAddrNode(addr, nodelist_true, nodelist_false)
+
 
 class IfHasAddrNode(Node):
     child_nodelists = ('nodelist_true', 'nodelist_false')
@@ -74,9 +75,10 @@ class IfHasAddrNode(Node):
         else:
             return self.nodelist_false.render(context)
 
-##
+#
 # Filters
-##
+#
+
 
 @stringfilter
 def first_name(st):
@@ -87,6 +89,7 @@ def first_name(st):
         return st.strip()
 
 register.filter('first_name', first_name)
+
 
 @stringfilter
 def last_name(st):

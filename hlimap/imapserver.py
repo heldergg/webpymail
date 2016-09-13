@@ -3,20 +3,20 @@
 # hlimap - High level IMAP library
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of hlimap.
-##
-## hlimap is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## hlimap is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of hlimap.
+#
+# hlimap is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# hlimap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -26,16 +26,25 @@ import socket
 from .imapfolder import FolderTree
 from imaplib2.imapp import IMAP4P
 
-class NoFolderListError(Exception): pass
-class NoSuchFolder(Exception): pass
-class ServerError(Exception): pass
+
+class NoFolderListError(Exception):
+    pass
+
+
+class NoSuchFolder(Exception):
+    pass
+
+
+class ServerError(Exception):
+    pass
+
 
 class ImapServer(object):
     '''Establishes the server connection, and does the authentication.
     '''
 
     def __init__(self, host='localhost', port=None, ssl=False,
-        keyfile=None, certfile=None):
+                 keyfile=None, certfile=None):
         '''
         @param host: host name of the imap server;
         @param port: port to be used. If not specified it will default to 143
@@ -48,8 +57,12 @@ class ImapServer(object):
         object.__init__(self)
 
         try:
-            self._imap = IMAP4P(host=host, port=port, ssl=ssl,
-                keyfile=keyfile,certfile=certfile,  autologout=False )
+            self._imap = IMAP4P(host=host,
+                                port=port,
+                                ssl=ssl,
+                                keyfile=keyfile,
+                                certfile=certfile,
+                                autologout=False)
             self.connected = True
         except socket.gaierror:
             self.connected = False
@@ -88,15 +101,15 @@ class ImapServer(object):
 
     def _get_folder_tree(self):
         if not self.__folder_tree:
-            self.__folder_tree = FolderTree( self )
+            self.__folder_tree = FolderTree(self)
         return self.__folder_tree
-    folder_tree = property( _get_folder_tree )
+    folder_tree = property(_get_folder_tree)
 
-    def refresh_folders(self, subscribed = True):
+    def refresh_folders(self, subscribed=True):
         '''This method extracts the folder list from the
         server.
         '''
-        self.folder_tree.refresh_folders( subscribed )
+        self.folder_tree.refresh_folders(subscribed)
 
         self.folder_tree.set_properties(self.expand_list,
                                         self.special_folders)
@@ -128,9 +141,9 @@ class ImapServer(object):
     def __getitem__(self, path):
         '''Returns a folder object'''
         if not self.folder_tree:
-            self.folder_tree = FolderTree( self )
+            self.folder_tree = FolderTree(self)
         if isinstance(path, bytes):
-            path = str(path,'ascii')
+            path = str(path, 'ascii')
         return self.folder_tree.get_folder(path)
 
     def __iter__(self):

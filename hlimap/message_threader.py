@@ -1,20 +1,20 @@
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of WebPyMail.
-##
-## WebPyMail is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## WebPyMail is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of WebPyMail.
+#
+# WebPyMail is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# WebPyMail is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -24,12 +24,14 @@ import collections
 import datetime
 import uuid
 
+
 def transverse_thread(thread_messages, message_id):
     m = thread_messages
     for child in m[message_id]['children']:
         yield transverse_thread(thread_messages, child)
     if message_id != 'root':
         yield message_id
+
 
 class Threader:
     '''Implements the client side REFERENCES threading algorithm defined in
@@ -40,17 +42,18 @@ class Threader:
 
     https://www.jwz.org/doc/threading.html
     '''
+
     def __init__(self, message_list, message_dict):
         self.message_list = message_list
         self.message_dict = message_dict
         self.thread_messages = collections.defaultdict(
-                lambda:{'imap_id': None,
-                        'parent': None,
-                        'children': [],
-                        'references': [],
-                        'dummy': True,
-                        'sent_date': datetime.datetime(1970,1,1,0,0,0),
-                        'subject': '',})
+                lambda: {'imap_id': None,
+                         'parent': None,
+                         'children': [],
+                         'references': [],
+                         'dummy': True,
+                         'sent_date': datetime.datetime(1970, 1, 1, 0, 0, 0),
+                         'subject': '', })
 
     def normalize_message_id(self, message_id):
         '''
@@ -69,7 +72,9 @@ class Threader:
         # This is the simplistic aproach for this problem
         # in the future a more robust soluction must be found
         if message_id:
-            return message_id.replace('<','').replace('>','').replace('"','')
+            return message_id.replace('<', ''
+                                      ).replace('>', ''
+                                                ).replace('"', '')
         return ''
 
     def get_message_id(self, msg_id, message_id_list):
@@ -98,7 +103,7 @@ class Threader:
         '''
         message = self.message_dict[msg_id]['data']
         references = [self.normalize_message_id(message_id)
-                        for message_id in message.references]
+                      for message_id in message.references]
         return references
 
     def collect_message_information(self):
@@ -106,12 +111,12 @@ class Threader:
         for msg_id in sorted(self.message_list):
             message_id = self.get_message_id(msg_id, message_id_list)
             references = self.get_messages_references(msg_id)
-            self.thread_messages[message_id]['dummy']=False
-            self.thread_messages[message_id]['references']=references
-            self.thread_messages[message_id]['imap_id']=msg_id
-            self.thread_messages[message_id]['sent_date']=(
+            self.thread_messages[message_id]['dummy'] = False
+            self.thread_messages[message_id]['references'] = references
+            self.thread_messages[message_id]['imap_id'] = msg_id
+            self.thread_messages[message_id]['sent_date'] = (
                 self.message_dict[msg_id]['data'].envelope['env_date'])
-            self.thread_messages[message_id]['subject']=(
+            self.thread_messages[message_id]['subject'] = (
                 self.message_dict[msg_id]['data'].envelope['env_subject'])
 
     def find_family_from_references(self):
@@ -188,7 +193,7 @@ class Threader:
             if m['message_id']['dummy']:
                 if m['message_id']['children']:
                     if (m['message_id']['parent'] != 'root' or
-                        len(m['message_id']['children']) == 1):
+                            len(m['message_id']['children']) == 1):
                         parent = m['message_id']['parent']
                         m[parent]['children'] += m['message_id']['children']
                         for child in m['message_id']['children']:
@@ -221,7 +226,8 @@ class Threader:
         if not m[message_id]['dummy']:
             message_list.append(m[message_id]['imap_id'])
         if len(m[message_id]['children']) == 1:
-            message_list += self.create_thread_list(m[message_id]['children'][0])
+            first_child = m[message_id]['children'][0]
+            message_list += self.create_thread_list(first_child)
         elif len(m[message_id]['children']) > 1:
             for child in m[message_id]['children']:
                 message_list.append(self.create_thread_list(child))
@@ -242,4 +248,3 @@ class Threader:
         print("#"*80)
 
         return self.create_thread_list('root')
-

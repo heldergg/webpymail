@@ -1,20 +1,20 @@
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of WebPyMail.
-##
-## WebPyMail is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## WebPyMail is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of WebPyMail.
+#
+# WebPyMail is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# WebPyMail is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -48,9 +48,11 @@ urlpatterns += [
 urlpatterns += [
         url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/$', message.show_message,
             name='mailapp-message'),
-        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/$',
+        url(r'^' + folder_pat +
+            r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/$',
             message.get_msg_part, name='mailapp_message_part'),
-        url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/inline/$',
+        url(r'^' + folder_pat +
+            r'/(?P<uid>[\d]+)/(?P<part_number>\d+(?:\.\d+)*)/inline/$',
             message.get_msg_part_inline, name='mailapp_mpart_inline'),
         url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/HEADER/$',
             message.message_header, name='mailapp_message_header'),

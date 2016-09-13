@@ -1,3 +1,25 @@
+# WebPyMail - IMAP python/django web mail client
+# Copyright (C) 2008 Helder Guerreiro
+
+# This file is part of WebPyMail.
+#
+# WebPyMail is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# WebPyMail is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+
+#
+# Helder Guerreiro <helder@tretas.org>
+#
+
 '''
 Adaptation of Django's django.template.loader_tags.py to redefine
 {% extends ... %} and {% include ... %} making this tags aware of the theme
@@ -9,19 +31,19 @@ mechanics:
 
 The first template to be found is used.
 '''
-import logging
-from collections import defaultdict
 
 from django.conf import settings
 from django.utils import six
-from django.utils.safestring import mark_safe
-from django.template.base import (Node, Template, TemplateSyntaxError, TextNode,
-                                  Variable, token_kwargs, )
+from django.template.base import (Node, Template, TemplateSyntaxError,
+                                  TextNode, Variable, token_kwargs,
+                                  VariableDoesNotExist)
 from django.template.library import Library
 from django.template.loader import select_template
 
 from django.template.loader_tags import BLOCK_CONTEXT_KEY
 from django.template.loader_tags import BlockContext, BlockNode
+from django.template.loader_tags import ExtendsError
+from django.template.loader_tags import logger
 
 # Local Imports
 from themesapp.shortcuts import get_theme
@@ -29,6 +51,7 @@ from themesapp.shortcuts import get_theme
 register = Library()
 
 DEFAULT_THEME = getattr(settings, 'DEFAULT_THEME', 'default')
+
 
 class LoaderNode(Node):
     def get_theme(self, context):
@@ -41,10 +64,11 @@ class LoaderNode(Node):
 
     def select_template(self, template_name, context):
         theme = self.get_theme(context)
-        t = select_template( [ '%s/%s' % (theme,  template_name,),
-                               '%s/%s' % (DEFAULT_THEME, template_name ),
-                               template_name ]  )
+        t = select_template(['%s/%s' % (theme,  template_name,),
+                             '%s/%s' % (DEFAULT_THEME, template_name),
+                             template_name])
         return t.template
+
 
 class ExtendsNode(LoaderNode):
     must_be_first = False
@@ -54,7 +78,8 @@ class ExtendsNode(LoaderNode):
         self.nodelist = nodelist
         self.parent_name = parent_name
         self.template_dirs = template_dirs
-        self.blocks = {n.name: n for n in nodelist.get_nodes_by_type(BlockNode)}
+        self.blocks = {n.name: n
+                       for n in nodelist.get_nodes_by_type(BlockNode)}
 
     def __repr__(self):
         return '<ExtendsNode: extends %s>' % self.parent_name.token
@@ -125,8 +150,9 @@ class ExtendsNode(LoaderNode):
             # The ExtendsNode has to be the first non-text node.
             if not isinstance(node, TextNode):
                 if not isinstance(node, ExtendsNode):
+                    nodelist = compiled_parent.nodelist
                     blocks = {n.name: n for n in
-                              compiled_parent.nodelist.get_nodes_by_type(BlockNode)}
+                              nodelist.get_nodes_by_type(BlockNode)}
                     block_context.add_blocks(blocks)
                 break
 
@@ -155,11 +181,12 @@ class IncludeNode(LoaderNode):
             # Does this quack like a Template?
             if not callable(getattr(template, 'render', None)):
                 # If not, we'll try our cache, and get_template()
-                template_name = self.select_template(template,context).name
+                template_name = self.select_template(template, context).name
                 cache = context.render_context.setdefault(self.context_key, {})
                 template = cache.get(template_name)
                 if template is None:
-                    template = context.template.engine.get_template(template_name)
+                    engine = context.template.engine
+                    template = engine.get_template(template_name)
                     cache[template_name] = template
             values = {
                 name: var.resolve(context)
@@ -172,7 +199,8 @@ class IncludeNode(LoaderNode):
         except Exception:
             if context.template.engine.debug:
                 raise
-            template_name = getattr(context, 'template_name', None) or 'unknown'
+            template_name = getattr(context, 'template_name',
+                                    None) or 'unknown'
             logger.warning(
                 "Exception raised while rendering {%% include %%} for "
                 "template '%s'. Empty string rendered instead.",
@@ -199,7 +227,8 @@ def do_extends(parser, token):
     parent_name = parser.compile_filter(bits[1])
     nodelist = parser.parse()
     if nodelist.get_nodes_by_type(ExtendsNode):
-        raise TemplateSyntaxError("'%s' cannot appear more than once in the same template" % bits[0])
+        raise TemplateSyntaxError(
+            "'%s' cannot appear more than once in the same template" % bits[0])
     return ExtendsNode(nodelist, parent_name)
 
 

@@ -3,32 +3,33 @@
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of WebPyMail.
-##
-## WebPyMail is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## WebPyMail is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of WebPyMail.
+#
+# WebPyMail is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# WebPyMail is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
 #
 
 from django import template
-from django.template.base import Variable, VariableDoesNotExist
-from django.utils.translation import gettext_lazy as _
+from django.template import TemplateSyntaxError
+from django.template.base import Variable
 
 register = template.Library()
 
 # Tag to retrieve a message part from the server:
+
 
 @register.tag(name="spaces")
 def do_spaces(parser, token):
@@ -36,9 +37,10 @@ def do_spaces(parser, token):
         # split_contents() knows not to split quoted strings.
         tag_name, num_spaces = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError("%r tag requires one arg: num_spaces" \
-            % token.contents.split()[0])
+        raise TemplateSyntaxError('%r tag requires one arg: num_spaces'
+                                  % token.contents.split()[0])
     return PartTextNode(num_spaces)
+
 
 class PartTextNode(template.Node):
     def __init__(self, num_spaces):
@@ -49,11 +51,14 @@ class PartTextNode(template.Node):
         try:
             num_spaces = int(num_spaces)
         except ValueError:
-            raise template.TemplateSyntaxError("%r tag's num_spaces argument must be an int" % tag_name)
+            raise TemplateSyntaxError('do_spaces tag\'s num_spaces argument '
+                                      'must be an int')
         return '&nbsp;&nbsp;' * num_spaces
 
-# Given a variable of type QueryDict it will update it and display the resulting
-# query
+# Given a variable of type QueryDict it will update it and display the
+# resulting query
+
+
 @register.tag(name="queryupdate")
 def do_queryupdate(parser, token):
     try:
@@ -64,8 +69,14 @@ def do_queryupdate(parser, token):
         else:
             tag_name, query, *query_parts = tokens
     except ValueError:
-        raise template.TemplateSyntaxError('%r tag requires ot least two args. The first must be a variable of type QueryDict, and then one or assignement expressions. The first must be a variable of type QueryDict and then one or query variables to create or update.')
+        raise TemplateSyntaxError('%r tag requires ot least two args. The '
+                                  'first must be a variable of type QueryDict,'
+                                  ' and then one or assignement expressions. '
+                                  'The first must be a variable of type '
+                                  'QueryDict and then one or query variables '
+                                  'to create or update.')
     return UpdateQueryNode(query, query_parts)
+
 
 class UpdateQueryNode(template.Node):
     def __init__(self, query, parts):
@@ -81,8 +92,8 @@ class UpdateQueryNode(template.Node):
     def render(self, context):
         query = self.query.resolve(context).copy()
         for var, value in self.parts:
-            if (value[0] == value[-1] and value[0] in ('\'','"') and
-                len(value[0])>2):
+            if (value[0] == value[-1] and value[0] in ('\'', '"') and
+                    len(value[0]) > 2):
                 query[var] = value[1:-1]
             else:
                 query[var] = Variable(value).resolve(context)

@@ -4,20 +4,20 @@
 # imaplib module
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of imaplib2.
-##
-## imaplib2 is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## imaplib2 is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of imaplib2.
+#
+# imaplib2 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# imaplib2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -27,15 +27,19 @@
 '''
 
 # Imports
-from .utils import getUnicodeHeader, getUnicodeMailAddr, internaldate2datetime, envelopedate2datetime
+from .utils import (getUnicodeHeader, getUnicodeMailAddr,
+                    internaldate2datetime, envelopedate2datetime)
 from .sexp import scan_sexp
 
 # Body structure
 
-class BODYERROR(Exception) : pass
+
+class BODYERROR(Exception):
+    pass
+
 
 class BodyPart:
-    def __init__(self, structure, prefix, level, next_part, parent = None):
+    def __init__(self, structure, prefix, level, next_part, parent=None):
         self.parent = parent
 
     def query(self):
@@ -99,10 +103,11 @@ class BodyPart:
         '''Only valid for single parts that are attachments'''
         return self.is_basic()
 
+
 class Multipart(BodyPart):
     def __init__(self, structure, prefix, level, next_part, parent=None):
         BodyPart.__init__(self, structure, prefix, level, next_part, parent)
-        if next_part: # has part number
+        if next_part:  # has part number
             self.part_number = '%s%d' % (prefix, level)
             prefix = '%s%d.' % (prefix, level)
         else:
@@ -121,7 +126,7 @@ class Multipart(BodyPart):
                 if isinstance(part, list):
                     # We have one more subpart
                     self.part_list.append(load_structure(part, prefix, level,
-                        next_part, self))
+                                                         next_part, self))
                     level += 1
                 else:
                     # The subpart list ended, the present field is the media
@@ -138,7 +143,7 @@ class Multipart(BodyPart):
     def represent(self):
         try:
             rpr = '%-10s %s/%s\n' % (self.part_number, self.media,
-                self.media_subtype)
+                                     self.media_subtype)
         except:
             rpr = '%-10s %s/%s\n' % (' ', self.media, self.media_subtype)
 
@@ -184,8 +189,9 @@ class Multipart(BodyPart):
                 return part.has_html()
         return False
 
+
 class Single (BodyPart):
-    def __init__(self, structure, prefix, level, next_part, parent = None):
+    def __init__(self, structure, prefix, level, next_part, parent=None):
         BodyPart.__init__(self, structure, prefix, level, next_part, parent)
         self.media = structure[0].upper()
         self.media_subtype = structure[1].upper()
@@ -199,7 +205,7 @@ class Single (BodyPart):
         self.body_fld_param = {}
         if structure[2]:
             it = iter(structure[2])
-            for name,value in zip(it,it):
+            for name, value in zip(it, it):
                 if name:
                     self.body_fld_param[name.upper()] = value
 
@@ -213,7 +219,8 @@ class Single (BodyPart):
 
     def filename(self):
         # TODO: first look for the name on the Content-Disposition header
-        # and only after this one should look on the Constant-Type Name parameter
+        # and only after this one should look on the Constant-Type Name
+        # parameter
         if 'NAME' in self.body_fld_param:
             return getUnicodeHeader(self.body_fld_param['NAME'])
         else:
@@ -221,7 +228,7 @@ class Single (BodyPart):
 
     def represent(self):
         return '%-10s %s/%s\n' % (self.part_number, self.media,
-            self.media_subtype)
+                                  self.media_subtype)
 
     def is_attachment(self):
         return bool(self.filename())
@@ -235,8 +242,9 @@ class Single (BodyPart):
     def __str__(self):
         return '<%s/%s>' % (self.media, self.media_subtype)
 
+
 class Message(Single):
-    def __init__(self, structure, prefix, level, next_part, parent = None):
+    def __init__(self, structure, prefix, level, next_part, parent=None):
         Single.__init__(self, structure, prefix, level, next_part, parent)
 
         prefix = '%s%d.' % (prefix, level)
@@ -246,10 +254,10 @@ class Message(Single):
 
         # Rest
         self.envelope = Envelope(structure[7])
-        self.body =  load_structure(structure[8], prefix, 1, next_part, self)
+        self.body = load_structure(structure[8], prefix, 1, next_part, self)
         self.body_fld_lines = structure[9]
 
-        if len(structure)>10:
+        if len(structure) > 10:
             self.body_ext_1part = structure[10:]
 
         self.start = True
@@ -273,8 +281,9 @@ class Message(Single):
         self.start = not self.start
         return tmp
 
+
 class SingleTextBasic (Single):
-    def __init__(self, structure, prefix, level, next_part, parent = None):
+    def __init__(self, structure, prefix, level, next_part, parent=None):
         Single.__init__(self, structure, prefix, level, next_part, parent)
 
     def __str__(self):
@@ -285,7 +294,7 @@ class SingleTextBasic (Single):
 
     def fetch_query(self, media, media_subtype):
         if (self.media == media and self.media_subtype == media_subtype) or \
-           (self.media == media and media_subtype== '*') or \
+           (self.media == media and media_subtype == '*') or \
            (media == '*' and self.media_subtype == media_subtype) or \
            (media == '*' and media_subtype == '*'):
             return self.query()
@@ -319,25 +328,29 @@ class SingleTextBasic (Single):
         else:
             return Single.is_attachment(self)
 
+
 class SingleText (SingleTextBasic):
-    def __init__(self, structure, prefix, level, next_part, parent = None):
-        SingleTextBasic.__init__(self, structure, prefix, level, next_part, parent)
+    def __init__(self, structure, prefix, level, next_part, parent=None):
+        SingleTextBasic.__init__(self, structure, prefix,
+                                 level, next_part, parent)
         self.body_fld_lines = structure[7]
 
         self.body_ext_1part = None
-        if len(structure)>8:
+        if len(structure) > 8:
             self.body_ext_1part = structure[8:]
         self.process_body_ext_1part()
 
     def is_text(self):
         return True
 
+
 class SingleBasic (SingleTextBasic):
-    def __init__(self, structure, prefix, level, next_part, parent = None):
-        SingleTextBasic.__init__(self, structure, prefix, level, next_part, parent)
+    def __init__(self, structure, prefix, level, next_part, parent=None):
+        SingleTextBasic.__init__(self, structure, prefix,
+                                 level, next_part, parent)
 
         self.body_ext_1part = None
-        if len(structure)>7:
+        if len(structure) > 7:
             self.body_ext_1part = structure[7:]
         self.process_body_ext_1part()
 
@@ -345,7 +358,9 @@ class SingleBasic (SingleTextBasic):
         '''Only true for media!='TEXT' '''
         return True
 
-def load_structure(structure, prefix='', level=1, next_part=False, parent = None):
+
+def load_structure(structure, prefix='',
+                   level=1, next_part=False, parent=None):
     if isinstance(structure[0], list):
         # It's a multipart
         return Multipart(structure, prefix, level, next_part, parent)
@@ -361,8 +376,9 @@ def load_structure(structure, prefix='', level=1, next_part=False, parent = None
 
     return SingleBasic(structure, prefix, level, next_part, parent)
 
+
 def envelope(structure):
-    return { 'env_date': envelopedate2datetime(structure[0]),
+    return {'env_date': envelopedate2datetime(structure[0]),
             'env_subject': getUnicodeHeader(structure[1]),
             'env_from': getUnicodeMailAddr(structure[2]),
             'env_sender': getUnicodeMailAddr(structure[3]),
@@ -371,7 +387,8 @@ def envelope(structure):
             'env_cc': getUnicodeMailAddr(structure[6]),
             'env_bcc': getUnicodeMailAddr(structure[7]),
             'env_in_reply_to': structure[8],
-            'env_message_id': structure[9]  }
+            'env_message_id': structure[9]}
+
 
 def real_name(address):
     '''From an address returns the person real name or if this is empty the
@@ -380,6 +397,7 @@ def real_name(address):
         return address[0]
     else:
         return address[1]
+
 
 class Envelope(dict):
     def __init__(self, env):
@@ -401,6 +419,7 @@ class Envelope(dict):
         '''Returns a list with the first and last names'''
         return self.short_mail_list(self['env_cc'])
 
+
 class FetchParser(dict):
     '''This class parses the fetch response (already as a python dict) and
     further processes.
@@ -409,7 +428,7 @@ class FetchParser(dict):
     def __init__(self, result):
         # Scan the message and make it a dict
         it = iter(scan_sexp(result)[0])
-        result = dict(list(zip(it,it)))
+        result = dict(list(zip(it, it)))
 
         dict.__init__(self, result)
 

@@ -3,20 +3,20 @@
 # WebPyMail - IMAP python/django web mail client
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of WebPyMail.
-##
-## WebPyMail is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## WebPyMail is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of WebPyMail.
+#
+# WebPyMail is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# WebPyMail is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with WebPyMail.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -30,7 +30,6 @@
 # Sys
 import time
 import textwrap
-import sys
 
 # Django
 from django.conf import settings
@@ -46,26 +45,27 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.message import MIMEMessage
 from email import message_from_file
 
-HAS_SMTP_SSL = False
-try:
-    from smtplib import SMTPRecipientsRefused, SMTPException, SMTP, SMTP_SSL
-    HAS_SMTP_SSL = True
-except ImportError:
-    from smtplib import SMTPRecipientsRefused, SMTPException, SMTP
-
-# Mail
 from hlimap import ImapServer
 
-def serverLogin( request ):
+HAS_SMTP_SSL = False
+try:
+    from smtplib import SMTP
+    from smtplib import SMTP_SSL
+    HAS_SMTP_SSL = True
+except ImportError:
+    from smtplib import SMTP
+
+
+def serverLogin(request):
     """Login to the server
     """
     # Login to the server:
-    M = ImapServer(host=request.session['host'],port=request.session['port'],
-        ssl= request.session['ssl'])
+    M = ImapServer(host=request.session['host'], port=request.session['port'],
+                   ssl=request.session['ssl'])
 
     try:
         M.login(request.session['username'],
-            request.session['password'])
+                request.session['password'])
         return M
     except:
         # TODO: The server can for some reason fail to login the user during a
@@ -75,7 +75,8 @@ def serverLogin( request ):
         #  NO [ALERT] Too many simultaneous connections. (Failure)
         raise Http404
 
-def join_address_list( addr_list ):
+
+def join_address_list(addr_list):
     '''Returns a comma separated list of mail addresses.
 
     @param addr_list: a list of addresses on the form [ ("name","email"), ... ]
@@ -86,11 +87,12 @@ def join_address_list( addr_list ):
         return ''
     addrs = []
     for addr in addr_list:
-        addrs.append( mail_addr_str(addr) )
+        addrs.append(mail_addr_str(addr))
 
     return ','.join(addrs)
 
-def mail_addr_str( mail_addr ):
+
+def mail_addr_str(mail_addr):
     '''String representation of a mail address.
 
     @param mail_addr: a tuple in the form ("Name", "email address")
@@ -99,11 +101,12 @@ def mail_addr_str( mail_addr ):
         name.
     '''
     if mail_addr[0]:
-        return '"%s" <%s>' % ( mail_addr[0], mail_addr[1] )
+        return '"%s" <%s>' % (mail_addr[0], mail_addr[1])
     else:
         return '<%s>' % mail_addr[1]
 
-def mail_addr_name_str( mail_addr ):
+
+def mail_addr_name_str(mail_addr):
     '''String representation of the person name in a mail address.
 
     @param mail_addr: a tuple in the form ("Name", "email address")
@@ -115,13 +118,15 @@ def mail_addr_name_str( mail_addr ):
     else:
         return '<%s>' % mail_addr[1]
 
-def quote_wrap_lines(text, quote_char = '>', width = 60):
+
+def quote_wrap_lines(text, quote_char='>', width=60):
     '''Wraps and quotes a message text.split
 
     @param text: text of the message
     @param quote_char: que character to be appended on eaxh line (without extra
         spaces)
-    @param width: number of columns the text should have counting the quote_char
+    @param width: number of columns the text should have counting the
+        quote_char
 
     @return: the quoted text.
     '''
@@ -132,14 +137,16 @@ def quote_wrap_lines(text, quote_char = '>', width = 60):
     new_list = []
     for ln in ln_list:
         if len(ln) > width:
-            ln = textwrap.fill( ln, width=width, initial_indent=quote_char, subsequent_indent=quote_char)
+            ln = textwrap.fill(ln, width=width, initial_indent=quote_char,
+                               subsequent_indent=quote_char)
             new_list.append(ln)
         else:
             new_list.append('%s %s' % (quote_char, ln))
 
     return '\n'.join(new_list)
 
-def show_addrs( label, addr_list, default ):
+
+def show_addrs(label, addr_list, default):
     '''Returns a text representation of the address list.
     '''
     txt = '%s: ' % label
@@ -155,12 +162,13 @@ def show_addrs( label, addr_list, default ):
 
     return txt
 
-##
-## Compose and send messages
-##
+#
+# Compose and send messages
+#
 
-def compose_rfc822( from_addr, to_addr, cc_addr, bcc_addr,
-                subject, message_plain, message_html, attachment_list = [] ):
+
+def compose_rfc822(from_addr, to_addr, cc_addr, bcc_addr,
+                   subject, message_plain, message_html, attachment_list=[]):
     '''
     Returns a rfc822 compliant message
     '''
@@ -168,7 +176,8 @@ def compose_rfc822( from_addr, to_addr, cc_addr, bcc_addr,
     if message_plain:
         message_plain = MIMEText(message_plain, _charset='utf-8')
     if message_html:
-        message_html = MIMEText(message_html.encode('utf-8'), _subtype = 'html', _charset='utf-8')
+        message_html = MIMEText(message_html.encode('utf-8'),
+                                _subtype='html', _charset='utf-8')
 
     if message_plain and message_html:
         msg_text = MIMEMultipart('alternative')
@@ -190,25 +199,29 @@ def compose_rfc822( from_addr, to_addr, cc_addr, bcc_addr,
             if attachment.media() == 'TEXT':
                 fp = open(filename)
                 # Note: we should handle calculating the charset
-                attach = MIMEText(fp.read(), _subtype=attachment.media_subtype(),
-                    _charset='utf-8')
+                attach = MIMEText(fp.read(),
+                                  _subtype=attachment.media_subtype(),
+                                  _charset='utf-8')
                 fp.close()
             elif attachment.media() == 'IMAGE':
                 fp = open(filename, 'rb')
-                attach = MIMEImage(fp.read(), _subtype=attachment.media_subtype())
+                attach = MIMEImage(fp.read(),
+                                   _subtype=attachment.media_subtype())
                 fp.close()
             elif attachment.media() == 'AUDIO':
                 fp = open(filename, 'rb')
-                attach = MIMEAudio(fp.read(), _subtype=attachment.media_subtype())
+                attach = MIMEAudio(fp.read(),
+                                   _subtype=attachment.media_subtype())
                 fp.close()
             elif (attachment.media() == 'MESSAGE' and
                     attachment.media_subtype() == 'RFC822'):
                 fp = open(filename, 'r')
-                attach =  MIMEMessage( message_from_file(fp) , 'RFC822' )
+                attach = MIMEMessage(message_from_file(fp), 'RFC822')
                 fp.close()
             else:
                 fp = open(filename, 'rb')
-                attach = MIMEBase(attachment.media(), attachment.media_subtype())
+                attach = MIMEBase(attachment.media(),
+                                  attachment.media_subtype())
                 attach.set_payload(fp.read())
                 fp.close()
 
@@ -216,15 +229,16 @@ def compose_rfc822( from_addr, to_addr, cc_addr, bcc_addr,
                 encoders.encode_base64(attach)
 
             # Set the filename parameter
-            attach.set_param('name',attachment.filename)
+            attach.set_param('name', attachment.filename)
             if attachment.show_inline:
                 attach.add_header('Content-Disposition', 'inline',
-                    filename=attachment.filename)
+                                  filename=attachment.filename)
             else:
                 attach.add_header('Content-Disposition', 'attachment',
-                    filename=attachment.filename)
+                                  filename=attachment.filename)
             if attachment.content_desc:
-                attach.add_header('Content-Description', attachment.content_desc)
+                attach.add_header('Content-Description',
+                                  attachment.content_desc)
             if attachment.content_id:
                 attach.add_header('Content-Id', attachment.content_id)
 
@@ -244,19 +258,21 @@ def compose_rfc822( from_addr, to_addr, cc_addr, bcc_addr,
         msg['Bcc'] = bcc_addr
 
     msg['Date'] = (time.strftime('%a, %d %b %Y %H:%M:%S ', time.localtime()) +
-                    '%+05d' % time.timezone)
+                   '%+05d' % time.timezone)
     msg['X-Mailer'] = 'WebPyMail %s' % settings.WEBPYMAIL_VERSION
 
     return msg
 
-def send_mail( message,  smtp_host, smtp_port, user = None, passwd = None,
-    security = None ):
+
+def send_mail(message,  smtp_host, smtp_port, user=None, passwd=None,
+              security=None):
     '''
     Sends a message to a smtp server
     '''
     if security == 'SSL':
         if not HAS_SMTP_SSL:
-            raise Exception('Sorry. For SMTP_SSL support you need Python >= 2.6')
+            raise Exception('Sorry. '
+                            'For SMTP_SSL support you need Python >= 2.6')
         s = SMTP_SSL(smtp_host, smtp_port)
     else:
         s = SMTP(smtp_host, smtp_port)

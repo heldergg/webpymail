@@ -3,20 +3,20 @@
 # hlimap - High level IMAP library
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of hlimap.
-##
-## hlimap is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## hlimap is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of hlimap.
+#
+# hlimap is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# hlimap is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
@@ -111,9 +111,10 @@ from imaplib2.parsefetch import Single
 
 from .message_threader import Threader
 from .message_sorter import Sorter, SortProgError
-from .message_paginator import Paginator, PaginatorError
+from .message_paginator import Paginator
 
 # Utils
+
 
 def flaten_nested(nested_list):
     '''Flaten a nested list.
@@ -125,13 +126,14 @@ def flaten_nested(nested_list):
         else:
             yield item
 
-def threaded_tree(nested_list, base_level = 0, parent = None):
+
+def threaded_tree(nested_list, base_level=0, parent=None):
     '''Analyses the tree, returns child depth (level)
     '''
     level = base_level
     for item in nested_list:
         if type(item) in (list, tuple):
-            for sub_item in threaded_tree(item, level, parent ):
+            for sub_item in threaded_tree(item, level, parent):
                 yield sub_item
         else:
             yield item, level, parent
@@ -140,14 +142,16 @@ def threaded_tree(nested_list, base_level = 0, parent = None):
 
 # Exceptions:
 
-class MessageNotFound(Exception): pass
+
+class MessageNotFound(Exception):
+    pass
 
 # Constants:
 
-SORT_KEYS = ( 'ARRIVAL', 'CC', 'DATE', 'FROM', 'SIZE', 'SUBJECT', 'TO' )
+SORT_KEYS = ('ARRIVAL', 'CC', 'DATE', 'FROM', 'SIZE', 'SUBJECT', 'TO')
 
 UNSORTED = 1
-SORTED   = 2
+SORTED = 2
 THREADED = 3
 
 # System flags
@@ -158,6 +162,7 @@ FLAGGED = r'\Flagged'
 DRAFT = r'\Draft'
 RECENT = r'\Recent'
 
+
 class MessageList(object):
     def __init__(self, server, folder):
         '''
@@ -165,11 +170,11 @@ class MessageList(object):
         @param folder: Folder instance this message list is associated with
         @param threaded: should we show a threaded message list?
         '''
-        self._imap  = server._imap
+        self._imap = server._imap
         self.server = server
         self.folder = folder
         # Sort capabilities:
-        sort   = self._imap.has_capability('SORT')
+        sort = self._imap.has_capability('SORT')
         thread = (self._imap.has_capability('THREAD=ORDEREDSUBJECT') or
                   self._imap.has_capability('THREAD=REFERENCES'))
         self.search_capability = [UNSORTED]
@@ -186,7 +191,7 @@ class MessageList(object):
         self.set_sort_program('-DATE')
         self.set_search_expression('ALL')
         # Message list options
-        self.refresh = True # Get the message list and their headers
+        self.refresh = True  # Get the message list and their headers
         self.flat_message_list = []
         # Pagination options
         self.show_style = SORTED
@@ -210,7 +215,7 @@ class MessageList(object):
         sort_program = '(%s)' % sort_program.strip()
         return sort_program
 
-    def test_sort_program(self, sort_list ):
+    def test_sort_program(self, sort_list):
         for keyword in sort_list:
             if keyword[0] == '-':
                 keyword = keyword[1:]
@@ -218,13 +223,13 @@ class MessageList(object):
                 raise SortProgError('Sort key unknown.')
         return True
 
-    def set_sort_program(self, *sort_list ):
+    def set_sort_program(self, *sort_list):
         '''Define the sort program to use, the available keywords are:
         ARRIVAL, CC, DATE, FROM, SIZE, SUBJECT, TO
 
         Any of this words can be perpended by a - meaning reverse order.
         '''
-        self.test_sort_program( sort_list )
+        self.test_sort_program(sort_list)
         self.sort_program = sort_list
 
     # Search expression:
@@ -242,7 +247,7 @@ class MessageList(object):
     def _get_number_messages(self):
         if self.search_expression.upper() == 'ALL':
             self._number_messages = self.folder.status['MESSAGES']
-        if self._number_messages == None:
+        if self._number_messages is None:
             self.refresh_messages()
         return self._number_messages
     number_messages = property(_get_number_messages)
@@ -265,12 +270,12 @@ class MessageList(object):
         if THREADED in self.search_capability and self.show_style == THREADED:
             # We have the THREAD extension:
             message_list = self._imap.thread(self.thread_alg,
-                'utf-8', self.search_expression)
+                                             'utf-8', self.search_expression)
             flat_message_list = list(flaten_nested(message_list))
         elif SORTED in self.search_capability:
             # We have the SORT extension on the server:
             message_list = self._imap.sort(self.sort_string(),
-                'utf-8', self.search_expression)
+                                           'utf-8', self.search_expression)
             flat_message_list = message_list[:]
         else:
             # Just get the list.
@@ -286,16 +291,16 @@ class MessageList(object):
         message_dict = {}
         for msg_id in flat_message_list:
             if msg_id not in message_dict:
-                message_dict[msg_id] = { 'children': [],
-                                         'parent': None,
-                                         'level': 0 }
+                message_dict[msg_id] = {'children': [],
+                                        'parent': None,
+                                        'level': 0}
         return message_dict
 
     def update_message_dict(self, message_list, message_dict):
         for msg_id, level, parent in threaded_tree(message_list):
             if msg_id not in message_dict:
                 continue
-            if level>0:
+            if level > 0:
                 if parent in message_dict:
                     if msg_id not in message_dict[parent]['children']:
                         message_dict[parent]['children'].append(msg_id)
@@ -306,18 +311,22 @@ class MessageList(object):
 
     def create_message_objects(self, flat_message_list, message_dict):
         if flat_message_list:
-            for msg_id,msg_info in self._imap.fetch(flat_message_list,
-                '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE BODY.PEEK[HEADER.FIELDS (REFERENCES)])').items():
+            for msg_id, msg_info in self._imap.fetch(flat_message_list,
+                                                     ('(ENVELOPE RFC822.SIZE '
+                                                      'FLAGS INTERNALDATE '
+                                                      'BODY.PEEK[HEADER.FIELDS'
+                                                      ' (REFERENCES)])')
+                                                     ).items():
                 message_dict[msg_id]['data'] = Message(
-                    self.server, self.folder, msg_info )
+                    self.server, self.folder, msg_info)
         return message_dict
 
     def paginate(self, flat_message_list):
         if self.paginator.msg_per_page == -1:
             message_list = self.flat_message_list
         else:
-            first_msg = ( self.paginator.current_page - 1
-                        ) * self.paginator.msg_per_page
+            first_msg = (self.paginator.current_page - 1
+                         ) * self.paginator.msg_per_page
             last_message = first_msg + self.paginator.msg_per_page - 1
             message_list = flat_message_list[first_msg:last_message+1]
         return message_list
@@ -363,22 +372,26 @@ class MessageList(object):
         # current search expression
         self._number_messages = len(flat_message_list)
         # Paginate now if we have SORT or THREAD capability, this way we don't
-        # have to retrieve message headers to all messages returned by the search
-        # program
-        if SORTED in self.search_capability or THREADED in self.search_capability:
+        # have to retrieve message headers to all messages returned by the
+        # search program
+        if (SORTED in self.search_capability or
+           THREADED in self.search_capability):
             flat_message_list = self.paginate(flat_message_list)
-            if not(self.show_style == THREADED and THREADED in self.search_capability):
+            if (not(self.show_style == THREADED and
+               THREADED in self.search_capability)):
                 message_list = list(flat_message_list)
         # Create the message dictionary
         message_dict = self.create_message_dict(flat_message_list)
         # Get message's header information
-        message_dict = self.create_message_objects(flat_message_list, message_dict)
+        message_dict = self.create_message_objects(flat_message_list,
+                                                   message_dict)
         # Client side threading
-        if self.show_style==THREADED and THREADED not in self.search_capability:
+        if (self.show_style == THREADED and
+           THREADED not in self.search_capability):
             message_list = Threader(message_list, message_dict).run()
             flat_message_list = list(flaten_nested(message_list))
         # Client side sorting
-        if SORTED not in self.search_capability and self.show_style==SORTED:
+        if SORTED not in self.search_capability and self.show_style == SORTED:
             message_list = Sorter(
                     message_list,
                     message_dict,
@@ -386,7 +399,7 @@ class MessageList(object):
             flat_message_list = list(message_list)
         # Update the message dict with the level information of the
         # thread level of each message and each message children
-        if self.show_style==THREADED:
+        if self.show_style == THREADED:
             message_dict = self.update_message_dict(message_list, message_dict)
             # TODO: Sort the threads according to the defined program unless
             # we have the sort extension
@@ -396,14 +409,16 @@ class MessageList(object):
         self.refresh = False
 
     # Handle a request for a single message:
-    def get_message(self, message_id ):
+    def get_message(self, message_id):
         '''Gets a _single_ message from the server
         '''
         # We need to get the msg envelope to initialize the
         # Message object
         try:
             msg_info = self._imap.fetch(message_id,
-                '(ENVELOPE RFC822.SIZE FLAGS INTERNALDATE BODY.PEEK[HEADER.FIELDS (REFERENCES)])')[message_id]
+                                        ('(ENVELOPE RFC822.SIZE FLAGS '
+                                         'INTERNALDATE BODY.PEEK[HEADER.FIELDS'
+                                         ' (REFERENCES)])'))[message_id]
         except KeyError:
             raise MessageNotFound('%s message not found' % message_id)
         return Message(self.server, self.folder, msg_info)
@@ -416,9 +431,9 @@ class MessageList(object):
             self.refresh_messages()
         if self.paginator.msg_per_page == -1:
             message_list = self.flat_message_list
-        elif len(self.flat_message_list)>self.paginator.msg_per_page:
-            first_msg = ( self.paginator.current_page - 1
-                        ) * self.paginator.msg_per_page
+        elif len(self.flat_message_list) > self.paginator.msg_per_page:
+            first_msg = (self.paginator.current_page - 1
+                         ) * self.paginator.msg_per_page
             last_message = first_msg + self.paginator.msg_per_page - 1
             message_list = self.flat_message_list[first_msg:last_message+1]
         else:
@@ -432,6 +447,7 @@ class MessageList(object):
     # Special methods
     def __repr__(self):
         return '<MessageList instance in folder "%s">' % (self.folder.name)
+
 
 class Message(object):
     def __init__(self, server, folder, msg_info):
@@ -455,7 +471,7 @@ class Message(object):
         self.get_flags(msg_info['FLAGS'])
         self.internaldate = msg_info['INTERNALDATE']
         self.references = self.get_references(msg_info)
-        self.level = 0 # Thread level
+        self.level = 0  # Thread level
         self.__bodystructure = None
 
     # References
@@ -464,22 +480,23 @@ class Message(object):
         if 'BODY.PEEK[HEADER.FIELDS (REFERENCES)]' in msg_info:
             ref_list = msg_info['BODY.PEEK[HEADER.FIELDS (REFERENCES)]']
             ref_list = ref_list.split('References:')
-            if len(ref_list)<2:
+            if len(ref_list) < 2:
                 return []
             return [ref.strip(' \r\n\t')
-                for ref in msg_info['BODY.PEEK[HEADER.FIELDS (REFERENCES)]'].split(
+                    for ref in msg_info['BODY.PEEK[HEADER.FIELDS '
+                                        '(REFERENCES)]'].split(
                     'References:')[1].split() if ref.strip(' \r\n\t')]
         return []
 
     # Fetch messages
     def get_bodystructure(self):
         if not self.__bodystructure:
-            self.__bodystructure = self._imap.fetch(self.uid,
-                '(BODYSTRUCTURE)')[self.uid]['BODYSTRUCTURE']
+            bodystructure = self._imap.fetch(self.uid, '(BODYSTRUCTURE)')
+            self.__bodystructure = bodystructure[self.uid]['BODYSTRUCTURE']
         return self.__bodystructure
     bodystructure = property(get_bodystructure)
 
-    def part(self, part, decode_text = True ):
+    def part(self, part, decode_text=True):
         '''Get a part from the server.
 
         The TEXT/PLAIN and TEXT/HTML parts are decoded according to the
@@ -489,14 +506,14 @@ class Message(object):
         text = self.fetch(query)
 
         if part.body_fld_enc.upper() == 'BASE64':
-            text = base64.b64decode(text )
+            text = base64.b64decode(text)
         elif part.body_fld_enc.upper() == 'QUOTED-PRINTABLE':
             text = quopri.decodestring(text)
 
         if (part.media.upper() == 'TEXT' and
-            part.media_subtype.upper() in  ('HTML', 'PLAIN') and
+            part.media_subtype.upper() in ('HTML', 'PLAIN') and
             decode_text and
-            not isinstance(text, str)):
+                not isinstance(text, str)):
             try:
                 return str(text, part.charset())
             except (UnicodeDecodeError, LookupError):
@@ -510,17 +527,17 @@ class Message(object):
                     raise
         return text
 
-    def fetch(self, query ):
+    def fetch(self, query):
         '''Returns the fetch response for the query
         '''
-        return self._imap.fetch(self.uid,query)[self.uid][query]
+        return self._imap.fetch(self.uid, query)[self.uid][query]
 
     def source(self):
         '''Returns the message source, untreated.
         '''
         return self.fetch('BODY[]')
 
-    def part_header(self, part = None):
+    def part_header(self, part=None):
         '''Get a part header from the server.
         '''
         if part:
@@ -528,7 +545,7 @@ class Message(object):
         else:
             query = 'BODY[HEADER]'
 
-        text = self._imap.fetch(self.uid,query)[self.uid][query]
+        text = self._imap.fetch(self.uid, query)[self.uid][query]
 
         return text
 
@@ -538,10 +555,10 @@ class Message(object):
         Search the message parts for a single part with id body_fld_id
         '''
         for part in self.bodystructure.serial_message():
-            if isinstance(part,Single):
+            if isinstance(part, Single):
                 part_fld_id = part.body_fld_id
                 if part_fld_id:
-                    part_fld_id = part_fld_id.replace('<','').replace('>','')
+                    part_fld_id = part_fld_id.replace('<', '').replace('>', '')
                 if part_fld_id == body_fld_id:
                     return part
         return None
@@ -550,24 +567,24 @@ class Message(object):
     def get_flags(self, flags):
         self.seen = SEEN in flags
         self.deleted = DELETED in flags
-        self.answered = ANSWERED  in flags
+        self.answered = ANSWERED in flags
         self.flagged = FLAGGED in flags
         self.draft = DRAFT in flags
         self.recent = RECENT in flags
 
-    def set_flags(self, *args ):
+    def set_flags(self, *args):
         self._imap.store(self.uid, '+FLAGS', args)
         if self._imap.expunged():
-           # The message might have been expunged
-           if self._imap.is_expunged(self.id):
-               # The message no longer exists
-               self._imap.reset_expunged()
-               raise MessageNotFound('The message was expunged,'
-                    ' Google IMAP does this...')
+            # The message might have been expunged
+            if self._imap.is_expunged(self.id):
+                # The message no longer exists
+                self._imap.reset_expunged()
+                raise MessageNotFound('The message was expunged,'
+                                      ' Google IMAP does this...')
 
         self.get_flags(self._imap.sstatus['fetch_response'][self.uid]['FLAGS'])
 
-    def reset_flags(self, *args ):
+    def reset_flags(self, *args):
         self._imap.store(self.uid, '-FLAGS', args)
         self.get_flags(self._imap.sstatus['fetch_response'][self.uid]['FLAGS'])
 

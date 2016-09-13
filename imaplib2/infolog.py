@@ -4,28 +4,29 @@
 # imaplib module
 # Copyright (C) 2008 Helder Guerreiro
 
-## This file is part of imaplib2.
-##
-## imaplib2 is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## imaplib2 is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
+# This file is part of imaplib2.
+#
+# imaplib2 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# imaplib2 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with hlimap.  If not, see <http://www.gnu.org/licenses/>.
 
 #
 # Helder Guerreiro <helder@tretas.org>
 #
 
-'''This module provides a single class that is used to register status responses
-from the server.
+'''This module provides a single class that is used to register status
+responses from the server.
 '''
+
 
 class InfoLog(list):
     '''Collects and manages the information and warnings issued by the server in
@@ -37,7 +38,8 @@ class InfoLog(list):
     By default it stores the last 10 entries, this can be defined while
     creating the instance.
     '''
-    def __init__(self, max_entries = 10, *args ):
+
+    def __init__(self, max_entries=10, *args):
         '''Creates a new InfoLog list.
 
         @param max_entries: number of entries to keep
@@ -48,7 +50,7 @@ class InfoLog(list):
 
         list.__init__(self, *args)
 
-    def addEntry( self, type, data ):
+    def addEntry(self, type, data):
         '''Adds a new log entry.
 
         @param type: the type of the entry (warning, error, info, etc)
@@ -59,13 +61,13 @@ class InfoLog(list):
         type = type.upper()
         if len(self) == self.max_entries:
             del self[0]
-        self.append({'type':type, 'data':data })
+        self.append({'type': type, 'data': data})
 
         for action in self.action_list:
             if action['type'] == type:
                 action['action'](type, data)
 
-    def addAction( self, type, action ):
+    def addAction(self, type, action):
         '''A callback action can be defined. Every time a new log is made
         the callback action will be executed.
 
@@ -73,19 +75,19 @@ class InfoLog(list):
         @param action: a python callable, the arguments used will be
         (type, data).
         '''
-        self.action_list.append( { 'type': type, 'action': action } )
+        self.action_list.append({'type': type, 'action': action})
 
 
 if __name__ == '__main__':
     a = InfoLog()
 
-    def printAA( type, data ):
+    def printAA(type, data):
         print('Type: ', type)
         print('Data: :', data)
 
-    a.addAction( 'AA', printAA )
+    a.addAction('AA', printAA)
     for i in range(20):
-        a.addEntry( 'AA','AAAAA %d' % i )
+        a.addEntry('AA', 'AAAAA %d' % i)
 
     print(a)
 
