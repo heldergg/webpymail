@@ -91,18 +91,17 @@
     </div>
   </div>
 {% endfor %}
-
 </div>
 {% include "mail/inc_page_nav.html" %}
-
-{% else %}<p>{% trans "Sorry. There are no messages on the current folder." %} - ({{ folder }}){% endif %}
-
 <div id="bottom_toolbar">
   <div class="toolbar_right">
     {% trans "This will delete PERMANENTLY the messages marked 'delete': " %}
     <input type="submit" name="expunge" value="{% trans "Expunge" %}" />
   </div>
 </div>
+
+{% else %}<p>{% trans "Sorry. There are no messages on the current folder." %} - ({{ folder }}){% endif %}
+
 </form>
 
 {% endblock %}
