@@ -30,6 +30,7 @@
 # Sys
 import time
 import textwrap
+import uuid
 
 # Django
 from django.conf import settings
@@ -168,7 +169,8 @@ def show_addrs(label, addr_list, default):
 
 
 def compose_rfc822(from_addr, to_addr, cc_addr, bcc_addr,
-                   subject, message_plain, message_html, attachment_list=[]):
+                   subject, message_plain, message_html, attachment_list=[],
+                   headers=[]):
     '''
     Returns a rfc822 compliant message
     '''
@@ -260,6 +262,20 @@ def compose_rfc822(from_addr, to_addr, cc_addr, bcc_addr,
     msg['Date'] = (time.strftime('%a, %d %b %Y %H:%M:%S ', time.localtime()) +
                    '%+05d' % time.timezone)
     msg['X-Mailer'] = 'WebPyMail %s' % settings.WEBPYMAIL_VERSION
+
+    # Message-ID header:
+    if from_addr:
+        host = from_addr.split('@')[-1]
+        if host[-1] == '>':
+            host = host[:-1]
+    else:
+        host = 'example.org'
+    msg['Message-ID'] = '<%s@%s>' % (str(uuid.uuid4()), host)
+
+    # Extra headers:
+    if headers:
+        for header in headers:
+            msg[header] = headers[header]
 
     return msg
 
