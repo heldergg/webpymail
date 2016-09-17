@@ -142,7 +142,7 @@ class UploadFiles:
 
 
 def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
-                 subject='', attachments=''):
+                 subject='', attachments='', headers={}):
     '''Generic send message view
     '''
     if request.method == 'POST':
@@ -211,7 +211,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
 
             message = compose_rfc822(from_addr, to_addr, cc_addr, bcc_addr,
                                      subject, message_text, message_html,
-                                     uploaded_files)
+                                     uploaded_files, headers)
 
             try:
                 host = config.get('smtp', 'host')
@@ -306,25 +306,40 @@ def reply_message(request, folder, uid):
     folder_name = base64.urlsafe_b64decode(str(folder))
     folder = server[folder_name]
     message = folder[int(uid)]
+    headers = {}
 
-    # Extract the relevant headers
-    to_addr = mail_addr_str(message.envelope['env_from'][0])
-    subject = _('Re: ') + message.envelope['env_subject']
-    # TODO: inlude the References and In-Reply-To headers
+    # References header:
+    message_id = message.envelope['env_message_id']
+    references = message.references.copy()
+    if message_id:
+        references.append(message_id)
+    headers['References'] = ' '.join(references)
 
-    # Extract the message text
-    text = ''
-    for part in message.bodystructure.serial_message():
-        if part.is_text() and part.is_plain():
-            text += message.part(part)
+    # In-Reply-To header:
+    headers['In-Reply-To'] = message_id
 
-    # Quote the message
-    text = quote_wrap_lines(text)
-    text = (mail_addr_name_str(message.envelope['env_from'][0]) +
-            _(' wrote:\n') + text)
+    if request.method == 'GET':
+        # Extract the relevant headers
+        to_addr = mail_addr_str(message.envelope['env_from'][0])
+        subject = _('Re: ') + message.envelope['env_subject']
 
-    # Invoque the compose message form
-    return send_message(request, text=text, to_addr=to_addr, subject=subject)
+        # Extract the message text
+        text = ''
+        for part in message.bodystructure.serial_message():
+            if part.is_text() and part.is_plain():
+                text += message.part(part)
+
+        # Quote the message
+        text = quote_wrap_lines(text)
+        text = (mail_addr_name_str(message.envelope['env_from'][0]) +
+                _(' wrote:\n') + text)
+
+        # Invoque the compose message form
+        return send_message(request, text=text, to_addr=to_addr,
+                            subject=subject, headers=headers)
+    else:
+        # Invoque the compose message form
+        return send_message(request, headers=headers)
 
 
 @login_required
@@ -335,28 +350,43 @@ def reply_all_message(request, folder, uid):
     folder_name = base64.urlsafe_b64decode(str(folder))
     folder = server[folder_name]
     message = folder[int(uid)]
+    headers = {}
 
-    # Extract the relevant headers
-    to_addr = mail_addr_str(message.envelope['env_from'][0])
-    cc_addr = join_address_list(message.envelope['env_to'] +
-                                message.envelope['env_cc'])
-    subject = _('Re: ') + message.envelope['env_subject']
-    # TODO: inlude the References and In-Reply-To headers
+    # References header:
+    message_id = message.envelope['env_message_id']
+    references = message.references.copy()
+    if message_id:
+        references.append(message_id)
+    headers['References'] = ' '.join(references)
 
-    # Extract the message text
-    text = ''
-    for part in message.bodystructure.serial_message():
-        if part.is_text() and part.is_plain():
-            text += message.part(part)
+    # In-Reply-To header:
+    headers['In-Reply-To'] = message_id
 
-    # Quote the message
-    text = quote_wrap_lines(text)
-    text = (mail_addr_name_str(message.envelope['env_from'][0]) +
-            _(' wrote:\n') + text)
+    if request.method == 'GET':
+        # Extract the relevant headers
+        to_addr = mail_addr_str(message.envelope['env_from'][0])
+        cc_addr = join_address_list(message.envelope['env_to'] +
+                                    message.envelope['env_cc'])
+        subject = _('Re: ') + message.envelope['env_subject']
+        # TODO: inlude the References and In-Reply-To headers
 
-    # Invoque the compose message form
-    return send_message(request, text=text, to_addr=to_addr, cc_addr=cc_addr,
-                        subject=subject)
+        # Extract the message text
+        text = ''
+        for part in message.bodystructure.serial_message():
+            if part.is_text() and part.is_plain():
+                text += message.part(part)
+
+        # Quote the message
+        text = quote_wrap_lines(text)
+        text = (mail_addr_name_str(message.envelope['env_from'][0]) +
+                _(' wrote:\n') + text)
+
+        # Invoque the compose message form
+        return send_message(request, text=text, to_addr=to_addr,
+                            cc_addr=cc_addr, subject=subject)
+    else:
+        # Invoque the compose message form
+        return send_message(request, headers=headers)
 
 
 @login_required
@@ -367,29 +397,44 @@ def forward_message(request, folder, uid):
     folder_name = base64.urlsafe_b64decode(str(folder))
     folder = M[folder_name]
     message = folder[int(uid)]
+    headers = {}
 
-    # Create a temporary file
-    fl = tempfile.mkstemp(suffix='.tmp', prefix='webpymail_',
-                          dir=settings.TEMPDIR)
+    # References header:
+    message_id = message.envelope['env_message_id']
+    references = message.references.copy()
+    if message_id:
+        references.append(message_id)
+    headers['References'] = ' '.join(references)
 
-    # Save message source to a file
-    os.write(fl[0], bytes(message.source(), 'utf-8'))
-    os.close(fl[0])
+    # In-Reply-To header:
+    headers['In-Reply-To'] = message_id
 
-    # Add a entry to the Attachments table:
-    attachment = Attachments(
-        user=request.user,
-        temp_file=fl[1],
-        filename='attached_message',
-        mime_type='MESSAGE/RFC822',
-        sent=False)
-    attachment.save()
+    if request.method == 'GET':
+        # Create a temporary file
+        fl = tempfile.mkstemp(suffix='.tmp', prefix='webpymail_',
+                              dir=settings.TEMPDIR)
 
-    # Gather some message info
-    subject = _('Fwd: ') + message.envelope['env_subject']
+        # Save message source to a file
+        os.write(fl[0], bytes(message.source(), 'utf-8'))
+        os.close(fl[0])
 
-    return send_message(request, subject=subject,
-                        attachments='%d' % attachment.id)
+        # Add a entry to the Attachments table:
+        attachment = Attachments(
+            user=request.user,
+            temp_file=fl[1],
+            filename='attached_message',
+            mime_type='MESSAGE/RFC822',
+            sent=False)
+        attachment.save()
+
+        # Gather some message info
+        subject = _('Fwd: ') + message.envelope['env_subject']
+
+        return send_message(request, subject=subject,
+                            attachments='%d' % attachment.id)
+    else:
+        # Invoque the compose message form
+        return send_message(request, headers=headers)
 
 
 @login_required
@@ -413,54 +458,76 @@ def forward_message_inline(request, folder, uid):
     folder_name = base64.urlsafe_b64decode(str(folder))
     folder = M[folder_name]
     message = folder[int(uid)]
+    headers = {}
 
-    # Extract the message text
-    text = ''
-    text += '\n\n' + _('Forwarded Message').center(40, '-') + '\n'
-    text += message_header(message)
+    # References header:
+    message_id = message.envelope['env_message_id']
+    references = message.references.copy()
+    if message_id:
+        references.append(message_id)
+    headers['References'] = ' '.join(references)
 
-    for part in message.bodystructure.serial_message():
-        if part.is_text() and part.is_plain() and not part.is_attachment():
-            text += message.part(part)
+    # In-Reply-To header:
+    headers['In-Reply-To'] = message_id
 
-        if part.is_encapsulated():
-            if part.is_start():
-                text += ('\n\n' +
-                         _('Encapsuplated Message').center(40, '-') + '\n')
-                text += message_header(part)
-            else:
-                text += ('\n' +
-                         _('End Encapsuplated Message').center(40, '-') + '\n')
-    text += '\n' + _('End Forwarded Message').center(40, '-') + '\n'
+    if request.method == 'GET':
+        # Extract the message text
+        text = ''
+        text += '\n\n' + _('Forwarded Message').center(40, '-') + '\n'
+        text += message_header(message)
 
-    # Extract the message attachments
-    attach_list = []
-    for part in message.bodystructure.serial_message():
-        if part.is_attachment() and not part.is_encapsulated():
-            # Create a temporary file
-            fl = tempfile.mkstemp(suffix='.tmp', prefix='webpymail_',
-                                  dir=settings.TEMPDIR)
+        for part in message.bodystructure.serial_message():
+            if part.is_text() and part.is_plain() and not part.is_attachment():
+                text += message.part(part)
 
-            # Save message source to a file
-            os.write(fl[0], message.part(part, decode_text=False))
-            os.close(fl[0])
+            if part.is_encapsulated():
+                if part.is_start():
+                    text += ('\n\n' +
+                             _('Encapsuplated Message').center(40, '-') +
+                             '\n')
+                    text += message_header(part)
+                else:
+                    text += ('\n' +
+                             _('End Encapsuplated Message').center(40, '-') +
+                             '\n')
+        text += '\n' + _('End Forwarded Message').center(40, '-') + '\n'
 
-            # Add a entry to the Attachments table:
-            attachment = Attachments(
-                user=request.user,
-                temp_file=fl[1],
-                filename=part.filename() if part.filename() else _('Unknown'),
-                mime_type='%s/%s' % (part.media, part.media_subtype),
-                content_desc=part.body_fld_desc if part.body_fld_desc else '',
-                content_id=part.body_fld_id if part.body_fld_id else '',
-                show_inline=part.body_fld_dsp[0].upper() != 'ATTACHMENT',
-                sent=False)
-            attachment.save()
-            attach_list.append(attachment.id)
+        # Extract the message attachments
+        attach_list = []
+        for part in message.bodystructure.serial_message():
+            if part.is_attachment() and not part.is_encapsulated():
+                # Create a temporary file
+                fl = tempfile.mkstemp(suffix='.tmp', prefix='webpymail_',
+                                      dir=settings.TEMPDIR)
 
-    # Gather some message info
-    subject = _('Fwd: ') + message.envelope['env_subject']
+                # Save message source to a file
+                os.write(fl[0], message.part(part, decode_text=False))
+                os.close(fl[0])
 
-    return send_message(request, subject=subject, text=text,
-                        attachments=','.join(['%d' % Xi for Xi in attach_list])
-                        )
+                # Add a entry to the Attachments table:
+                attachment = Attachments(
+                    user=request.user,
+                    temp_file=fl[1],
+                    filename=(part.filename()
+                              if part.filename() else
+                              _('Unknown')),
+                    mime_type='%s/%s' % (part.media, part.media_subtype),
+                    content_desc=(part.body_fld_desc
+                                  if part.body_fld_desc else
+                                  ''),
+                    content_id=part.body_fld_id if part.body_fld_id else '',
+                    show_inline=part.body_fld_dsp[0].upper() != 'ATTACHMENT',
+                    sent=False)
+                attachment.save()
+                attach_list.append(attachment.id)
+
+        # Gather some message info
+        subject = _('Fwd: ') + message.envelope['env_subject']
+
+        return send_message(request, subject=subject, text=text,
+                            attachments=','.join(['%d' % Xi
+                                                  for Xi in attach_list])
+                            )
+    else:
+        # Invoque the compose message form
+        return send_message(request, headers=headers)
