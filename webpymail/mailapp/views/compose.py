@@ -146,6 +146,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
     '''Generic send message view
     '''
     if request.method == 'POST':
+        # Auxiliary data initialization
         new_data = request.POST.copy()
         other_action = False
         old_files = []
@@ -182,8 +183,9 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
         form = ComposeMailForm(new_data, request=request)
         if 'upload' in new_data:
             other_action = True
+
         if form.is_valid() and not other_action:
-            # get the data:
+            # Read the posted data
             form_data = form.cleaned_data
 
             subject = form_data['subject']
@@ -198,6 +200,7 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
 
             config = WebpymailConfig(request)
 
+            # Create html message
             if text_format == MARKDOWN and HAS_MARKDOWN:
                 md = markdown.Markdown(output_format='HTML')
                 message_html = md.convert(smart_text(message_text))
@@ -209,10 +212,15 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
             else:
                 message_html = None
 
+            # Create the RFC822 message
+            # NOTE: the current relevant RFC is RFC 5322, maybe this function
+            # name should be changed to reflect this, maybe it shouldn't be
+            # named after the RFC!
             message = compose_rfc822(from_addr, to_addr, cc_addr, bcc_addr,
                                      subject, message_text, message_html,
                                      uploaded_files, headers)
 
+            # Post the message to the SMTP server
             try:
                 host = config.get('smtp', 'host')
                 port = config.getint('smtp', 'port')
@@ -254,12 +262,14 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
 
             return HttpResponseRedirect('/')
         else:
+            # Return to the message composig view
             return render(request,
                           'mail/send_message.html',
                           {'form': form,
                            'uploaded_files': uploaded_files})
 
     else:
+        # Create the intial message
         initial = {'text_format': 1,
                    'message_text': text,
                    'to_addr': to_addr,
@@ -331,8 +341,11 @@ def reply_message(request, folder, uid):
 
         # Quote the message
         text = quote_wrap_lines(text)
-        text = (mail_addr_name_str(message.envelope['env_from'][0]) +
-                _(' wrote:\n') + text)
+        text = _('On %s, %s wrote:\n%s' % (
+                    message.envelope['env_date'],
+                    mail_addr_name_str(message.envelope['env_from'][0]),
+                    text)
+                 )
 
         # Invoque the compose message form
         return send_message(request, text=text, to_addr=to_addr,
@@ -345,7 +358,7 @@ def reply_message(request, folder, uid):
 @login_required
 def reply_all_message(request, folder, uid):
     '''Reply to a message'''
-    # Get the message
+    # Get the message we're replying to
     server = serverLogin(request)
     folder_name = base64.urlsafe_b64decode(str(folder))
     folder = server[folder_name]
@@ -368,7 +381,6 @@ def reply_all_message(request, folder, uid):
         cc_addr = join_address_list(message.envelope['env_to'] +
                                     message.envelope['env_cc'])
         subject = _('Re: ') + message.envelope['env_subject']
-        # TODO: inlude the References and In-Reply-To headers
 
         # Extract the message text
         text = ''
@@ -378,8 +390,11 @@ def reply_all_message(request, folder, uid):
 
         # Quote the message
         text = quote_wrap_lines(text)
-        text = (mail_addr_name_str(message.envelope['env_from'][0]) +
-                _(' wrote:\n') + text)
+        text = _('On %s, %s wrote:\n%s' % (
+                    message.envelope['env_date'],
+                    mail_addr_name_str(message.envelope['env_from'][0]),
+                    text)
+                 )
 
         # Invoque the compose message form
         return send_message(request, text=text, to_addr=to_addr,
@@ -410,6 +425,9 @@ def forward_message(request, folder, uid):
     headers['In-Reply-To'] = message_id
 
     if request.method == 'GET':
+        # Extract the relevant headers
+        subject = _('Fwd: ') + message.envelope['env_subject']
+
         # Create a temporary file
         fl = tempfile.mkstemp(suffix='.tmp', prefix='webpymail_',
                               dir=settings.TEMPDIR)
@@ -426,9 +444,6 @@ def forward_message(request, folder, uid):
             mime_type='MESSAGE/RFC822',
             sent=False)
         attachment.save()
-
-        # Gather some message info
-        subject = _('Fwd: ') + message.envelope['env_subject']
 
         return send_message(request, subject=subject,
                             attachments='%d' % attachment.id)
@@ -471,6 +486,9 @@ def forward_message_inline(request, folder, uid):
     headers['In-Reply-To'] = message_id
 
     if request.method == 'GET':
+        # Extract the relevant headers
+        subject = _('Fwd: ') + message.envelope['env_subject']
+
         # Extract the message text
         text = ''
         text += '\n\n' + _('Forwarded Message').center(40, '-') + '\n'
@@ -520,9 +538,6 @@ def forward_message_inline(request, folder, uid):
                     sent=False)
                 attachment.save()
                 attach_list.append(attachment.id)
-
-        # Gather some message info
-        subject = _('Fwd: ') + message.envelope['env_subject']
 
         return send_message(request, subject=subject, text=text,
                             attachments=','.join(['%d' % Xi
