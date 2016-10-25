@@ -64,7 +64,8 @@ urlpatterns += [
 
 # Compose messages:
 urlpatterns += [
-    url(r'^compose/$', compose.new_message, name='mailapp_send_message'),
+    url(r'^compose/$',
+        compose.ComposeMail.as_view(), name='mailapp_send_message'),
     url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/REPLY/$',
         compose.reply_message, name='mailapp_reply_message'),
     url(r'^' + folder_pat + r'/(?P<uid>[\d]+)/REPLYALL/$',

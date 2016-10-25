@@ -42,9 +42,11 @@ except ImportError:
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
+from django.utils.decorators import method_decorator
 from django.utils.encoding import smart_text
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
+from django.views.generic import View
 
 # Local Imports
 from utils.config import WebpymailConfig
@@ -139,6 +141,69 @@ class UploadFiles:
                                      sent=False)
             attachment.save()
             self.file_list.append(attachment)
+
+
+class ComposeMail(View):
+    '''
+    Compose mail messages
+
+    Context:
+
+    page_title - self explanatory
+    form - mail composing form
+    uploaded_files - instance of UploadFiles or None
+    '''
+    page_title = _('New Message')
+    uploaded_files = None
+
+    def get_context_data(self):
+        '''Build the message form context
+        '''
+        context = {}
+        context['page_title'] = self.page_title
+        context['uploaded_files'] = self.uploaded_files
+        return context
+
+    def get_message_data(self, request, context):
+        message_data = {'text_format': 1,
+                        'message_text': request.GET.get('text', ''),
+                        'to_addr': request.GET.get('to_addr', ''),
+                        'cc_addr': request.GET.get('cc_addr', ''),
+                        'bcc_addr': request.GET.get('bcc_addr', ''),
+                        'subject': request.GET.get('subject', ''),
+                        'saved_files': request.GET.get('attachments', ''),
+                        }
+        return message_data
+
+    def get_uploaded_files(self, request, message_data):
+        uploaded_files = []
+        attachments = message_data['saved_files']
+        if attachments:
+            uploaded_files = UploadFiles(request.user,
+                                         old_files=attachments.split(','))
+        return uploaded_files
+
+    # HTTP methods
+
+    def get(self, request):
+        print('Get')
+        context = self.get_context_data()
+        message_data = self.get_message_data(request, context)
+        uploaded_files = self.get_uploaded_files(request, message_data)
+        context['form'] = ComposeMailForm(initial=message_data,
+                                          request=request)
+        context['uploaded_files'] = uploaded_files
+        return render(request,
+                      'mail/send_message.html',
+                      context)
+
+    def post(self, request):
+        pass
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        print('Dispatch')
+        return super(ComposeMail, self).dispatch(request, *args, **kwargs)
 
 
 def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
@@ -484,7 +549,6 @@ def forward_message_inline(request, folder, uid):
 
     # In-Reply-To header:
     headers['In-Reply-To'] = message_id
-
     if request.method == 'GET':
         # Extract the relevant headers
         subject = _('Fwd: ') + message.envelope['env_subject']
