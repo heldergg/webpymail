@@ -183,6 +183,42 @@ class ComposeMail(View):
                                          old_files=attachments.split(','))
         return uploaded_files
 
+    def post_uploaded_files(self, request, data):
+        '''Create the UploadFiles object'''
+        old_files = []
+        if 'saved_files' in data:
+            if data['saved_files']:
+                old_files = data['saved_files'].split(',')
+        file_list = request.FILES.getlist('attachment[]')
+        return UploadFiles(request.user,
+                           old_files=old_files,
+                           new_files=file_list)
+
+    def post_cancel(self, uploaded_files):
+        # Delete files
+        uploaded_files.delete()
+
+    def post_delete_files(self, data, uploaded_files):
+        '''Check if there is a request to delete files'''
+        delete_files = False
+        for key in data:
+            match = delete_re.match(key)
+            if match:
+                id = int(match.groups()[0])
+                uploaded_files.delete_id(id)
+                delete_files = True
+        return delete_files
+
+    def post_saved_files(self, data, uploaded_files):
+        '''Create an hidden field with the file list.
+        In case the form does not validate, then the user doesn't have
+        to upload it again'''
+        data['saved_files'] = ','.join(['%d' % Xi
+                                        for Xi in uploaded_files.id_list()])
+
+    def post_form(self, request, data):
+        return ComposeMailForm(data, request=request)
+
     # HTTP methods
 
     def get(self, request):
@@ -198,7 +234,25 @@ class ComposeMail(View):
                       context)
 
     def post(self, request):
-        pass
+        print('Post')
+        data = request.POST.copy()
+        uploaded_files = self.post_uploaded_files(request, data)
+        if 'cancel' in data:
+            self.post_cancel(uploaded_files)
+            return HttpResponseRedirect('/')
+        other_action = self.post_delete_files(data, uploaded_files)
+        self.post_saved_files(data, uploaded_files)
+        if 'upload' in data:
+            other_action = True
+        form = self.post_form(request, data)
+        if form.is_valid() and not other_action:
+            pass
+        else:
+            # Return to the message composig view
+            return render(request,
+                          'mail/send_message.html',
+                          {'form': form,
+                           'uploaded_files': uploaded_files})
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
