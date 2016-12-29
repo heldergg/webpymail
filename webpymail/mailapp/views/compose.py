@@ -42,11 +42,9 @@ except ImportError:
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.utils.decorators import method_decorator
 from django.utils.encoding import smart_text
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
-from django.views.generic import View
 
 # Local Imports
 from utils.config import WebpymailConfig
@@ -59,7 +57,6 @@ from mailapp.views.mail_utils import (serverLogin, send_mail,
                                       show_addrs, compose_rfc822)
 
 # CONST
-
 PLAIN = 1
 MARKDOWN = 2
 
@@ -67,6 +64,15 @@ MARKDOWN = 2
 delete_re = re.compile(r'^delete_(\d+)$')
 
 
+# Exceptions
+class SendError(Exception):
+    '''
+    Http errors when sending messages
+    '''
+    pass
+
+
+# Utility functions
 def imap_store(request, folder, message):
     '''
     Stores a message on an IMAP folder.
@@ -76,6 +82,7 @@ def imap_store(request, folder, message):
     folder.append(message.as_string())
 
 
+# Attachment handling
 class UploadFiles:
     '''
     File uploading manager
@@ -142,277 +149,199 @@ class UploadFiles:
             attachment.save()
             self.file_list.append(attachment)
 
+#
+# Compose message GET handling
+#
 
-class ComposeMail(View):
+
+def get_context_data(page_title, uploaded_files):
+    '''Build the message form context
     '''
-    Compose mail messages
+    context = {}
+    context['page_title'] = page_title
+    context['uploaded_files'] = uploaded_files
+    return context
 
-    Context:
 
-    page_title - self explanatory
-    form - mail composing form
-    uploaded_files - instance of UploadFiles or None
+def get_message_data(request):
+    message_data = {'text_format': 1,
+                    'message_text': request.GET.get('text', ''),
+                    'to_addr': request.GET.get('to_addr', ''),
+                    'cc_addr': request.GET.get('cc_addr', ''),
+                    'bcc_addr': request.GET.get('bcc_addr', ''),
+                    'subject': request.GET.get('subject', ''),
+                    'saved_files': request.GET.get('attachments', ''),
+                    }
+    return message_data
+
+
+def get_uploaded_files(request, message_data):
+    uploaded_files = []
+    attachments = message_data['saved_files']
+    if attachments:
+        uploaded_files = UploadFiles(request.user,
+                                     old_files=attachments.split(','))
+    return uploaded_files
+
+
+#
+# Compose message POST handling
+#
+
+def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
+                 subject='', attachments='', headers={}):
+    '''Generic send message view
     '''
-    page_title = _('New Message')
-    uploaded_files = None
+    # Auxiliary data initialization
+    new_data = request.POST.copy()
+    other_action = False
+    old_files = []
+    if 'saved_files' in new_data:
+        if new_data['saved_files']:
+            old_files = new_data['saved_files'].split(',')
+    file_list = request.FILES.getlist('attachment[]')
+    uploaded_files = UploadFiles(request.user,
+                                 old_files=old_files,
+                                 new_files=file_list)
 
-    def get_context_data(self):
-        '''Build the message form context
-        '''
-        context = {}
-        context['page_title'] = self.page_title
-        context['uploaded_files'] = self.uploaded_files
-        return context
+    # Check if there is a request to delete files
+    for key in new_data:
+        match = delete_re.match(key)
+        if match:
+            id = int(match.groups()[0])
+            uploaded_files.delete_id(id)
+            other_action = True
 
-    def get_message_data(self, request, context):
-        message_data = {'text_format': 1,
-                        'message_text': request.GET.get('text', ''),
-                        'to_addr': request.GET.get('to_addr', ''),
-                        'cc_addr': request.GET.get('cc_addr', ''),
-                        'bcc_addr': request.GET.get('bcc_addr', ''),
-                        'subject': request.GET.get('subject', ''),
-                        'saved_files': request.GET.get('attachments', ''),
-                        }
-        return message_data
+    # Check if the cancel button was pressed
+    if 'cancel' in new_data:
+        # Delete the files
+        uploaded_files.delete()
+        # return
+        return HttpResponseRedirect('/')
 
-    def get_uploaded_files(self, request, message_data):
-        uploaded_files = []
-        attachments = message_data['saved_files']
-        if attachments:
-            uploaded_files = UploadFiles(request.user,
-                                         old_files=attachments.split(','))
-        return uploaded_files
+    # create an hidden field with the file list.
+    # In case the form does not validate, the user doesn't have
+    # to upload it again
+    new_data['saved_files'] = ','.join(['%d' % Xi
+                                        for Xi in uploaded_files.id_list()]
+                                       )
+    user_profile = request.user.userprofile
+    form = ComposeMailForm(new_data, request=request)
+    if 'upload' in new_data:
+        other_action = True
 
-    def post_uploaded_files(self, request, data):
-        '''Create the UploadFiles object'''
-        old_files = []
-        if 'saved_files' in data:
-            if data['saved_files']:
-                old_files = data['saved_files'].split(',')
-        file_list = request.FILES.getlist('attachment[]')
-        return UploadFiles(request.user,
-                           old_files=old_files,
-                           new_files=file_list)
+    if form.is_valid() and not other_action:
+        # Read the posted data
+        form_data = form.cleaned_data
 
-    def post_cancel(self, uploaded_files):
-        # Delete files
+        subject = form_data['subject']
+        from_addr = form_data['from_addr']
+
+        to_addr = join_address_list(form_data['to_addr'])
+        cc_addr = join_address_list(form_data['cc_addr'])
+        bcc_addr = join_address_list(form_data['bcc_addr'])
+
+        text_format = form_data['text_format']
+        message_text = form_data['message_text'].encode('utf-8')
+
+        config = WebpymailConfig(request)
+
+        # Create html message
+        if text_format == MARKDOWN and HAS_MARKDOWN:
+            md = markdown.Markdown(output_format='HTML')
+            message_html = md.convert(smart_text(message_text))
+            css = config.get('message', 'css')
+            # TODO: use a template to get the html and insert the css
+            message_html = ('<html>\n<style>%s</style>'
+                            '<body>\n%s\n</body>\n</html>' %
+                            (css, message_html))
+        else:
+            message_html = None
+
+        # Create the RFC822 message
+        # NOTE: the current relevant RFC is RFC 5322, maybe this function
+        # name should be changed to reflect this, maybe it shouldn't be
+        # named after the RFC!
+        message = compose_rfc822(from_addr, to_addr, cc_addr, bcc_addr,
+                                 subject, message_text, message_html,
+                                 uploaded_files, headers)
+
+        # Post the message to the SMTP server
+        try:
+            host = config.get('smtp', 'host')
+            port = config.getint('smtp', 'port')
+            user = config.get('smtp', 'user')
+            passwd = config.get('smtp', 'passwd')
+            security = config.get('smtp', 'security').upper()
+            use_imap_auth = config.getboolean('smtp', 'use_imap_auth')
+
+            if use_imap_auth:
+                user = request.session['username']
+                passwd = request.session['password']
+
+            send_mail(message, host, port, user, passwd, security)
+        except SMTPRecipientsRefused as detail:
+            error_message = ''.join(
+                ['<p>%s' % escape(detail.recipients[Xi][1])
+                 for Xi in detail.recipients])
+            return render(request, 'mail/send_message.html',
+                          {'form': form,
+                           'server_error': error_message,
+                           'uploaded_files': uploaded_files})
+        except SMTPException as detail:
+            return render(request, 'mail/send_message.html',
+                          {'form': form,
+                           'server_error': '<p>%s' % detail,
+                           'uploaded_files': uploaded_files})
+        except Exception as detail:
+            error_message = '<p>%s' % detail
+            return render(request, 'mail/send_message.html',
+                          {'form': form,
+                           'server_error': error_message,
+                           'uploaded_files': uploaded_files})
+
+        # Store the message on the sent folder
+        imap_store(request, user_profile.sent_folder, message)
+
+        # Delete the temporary files
         uploaded_files.delete()
 
-    def post_delete_files(self, data, uploaded_files):
-        '''Check if there is a request to delete files'''
-        delete_files = False
-        for key in data:
-            match = delete_re.match(key)
-            if match:
-                id = int(match.groups()[0])
-                uploaded_files.delete_id(id)
-                delete_files = True
-        return delete_files
+        return HttpResponseRedirect('/')
+    else:
+        # Return to the message composig view
+        return render(request,
+                      'mail/send_message.html',
+                      {'form': form,
+                       'uploaded_files': uploaded_files})
 
-    def post_saved_files(self, data, uploaded_files):
-        '''Create an hidden field with the file list.
-        In case the form does not validate, then the user doesn't have
-        to upload it again'''
-        data['saved_files'] = ','.join(['%d' % Xi
-                                        for Xi in uploaded_files.id_list()])
+#
+# Send messages views
+#
 
-    def post_form(self, request, data):
-        return ComposeMailForm(data, request=request)
 
-    # HTTP methods
-
-    def get(self, request):
-        print('Get')
-        context = self.get_context_data()
-        message_data = self.get_message_data(request, context)
-        uploaded_files = self.get_uploaded_files(request, message_data)
+@login_required
+def new_message(request):
+    if request.method == 'GET':
+        # Configuration
+        page_title = _('New Message')
+        uploaded_files = None
+        # Form setup
+        context = get_context_data(page_title, uploaded_files)
+        message_data = get_message_data(request)
+        uploaded_files = get_uploaded_files(request, message_data)
         context['form'] = ComposeMailForm(initial=message_data,
                                           request=request)
         context['uploaded_files'] = uploaded_files
         return render(request,
                       'mail/send_message.html',
                       context)
-
-    def post(self, request):
-        print('Post')
-        data = request.POST.copy()
-        uploaded_files = self.post_uploaded_files(request, data)
-        if 'cancel' in data:
-            self.post_cancel(uploaded_files)
-            return HttpResponseRedirect('/')
-        other_action = self.post_delete_files(data, uploaded_files)
-        self.post_saved_files(data, uploaded_files)
-        if 'upload' in data:
-            other_action = True
-        form = self.post_form(request, data)
-        if form.is_valid() and not other_action:
-            pass
-        else:
-            # Return to the message composig view
-            return render(request,
-                          'mail/send_message.html',
-                          {'form': form,
-                           'uploaded_files': uploaded_files})
-
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        print('Dispatch')
-        return super(ComposeMail, self).dispatch(request, *args, **kwargs)
-
-
-def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
-                 subject='', attachments='', headers={}):
-    '''Generic send message view
-    '''
-    if request.method == 'POST':
-        # Auxiliary data initialization
-        new_data = request.POST.copy()
-        other_action = False
-        old_files = []
-        if 'saved_files' in new_data:
-            if new_data['saved_files']:
-                old_files = new_data['saved_files'].split(',')
-        file_list = request.FILES.getlist('attachment[]')
-        uploaded_files = UploadFiles(request.user,
-                                     old_files=old_files,
-                                     new_files=file_list)
-
-        # Check if there is a request to delete files
-        for key in new_data:
-            match = delete_re.match(key)
-            if match:
-                id = int(match.groups()[0])
-                uploaded_files.delete_id(id)
-                other_action = True
-
-        # Check if the cancel button was pressed
-        if 'cancel' in new_data:
-            # Delete the files
-            uploaded_files.delete()
-            # return
-            return HttpResponseRedirect('/')
-
-        # create an hidden field with the file list.
-        # In case the form does not validate, the user doesn't have
-        # to upload it again
-        new_data['saved_files'] = ','.join(['%d' % Xi
-                                            for Xi in uploaded_files.id_list()]
-                                           )
-        user_profile = request.user.userprofile
-        form = ComposeMailForm(new_data, request=request)
-        if 'upload' in new_data:
-            other_action = True
-
-        if form.is_valid() and not other_action:
-            # Read the posted data
-            form_data = form.cleaned_data
-
-            subject = form_data['subject']
-            from_addr = form_data['from_addr']
-
-            to_addr = join_address_list(form_data['to_addr'])
-            cc_addr = join_address_list(form_data['cc_addr'])
-            bcc_addr = join_address_list(form_data['bcc_addr'])
-
-            text_format = form_data['text_format']
-            message_text = form_data['message_text'].encode('utf-8')
-
-            config = WebpymailConfig(request)
-
-            # Create html message
-            if text_format == MARKDOWN and HAS_MARKDOWN:
-                md = markdown.Markdown(output_format='HTML')
-                message_html = md.convert(smart_text(message_text))
-                css = config.get('message', 'css')
-                # TODO: use a template to get the html and insert the css
-                message_html = ('<html>\n<style>%s</style>'
-                                '<body>\n%s\n</body>\n</html>' %
-                                (css, message_html))
-            else:
-                message_html = None
-
-            # Create the RFC822 message
-            # NOTE: the current relevant RFC is RFC 5322, maybe this function
-            # name should be changed to reflect this, maybe it shouldn't be
-            # named after the RFC!
-            message = compose_rfc822(from_addr, to_addr, cc_addr, bcc_addr,
-                                     subject, message_text, message_html,
-                                     uploaded_files, headers)
-
-            # Post the message to the SMTP server
-            try:
-                host = config.get('smtp', 'host')
-                port = config.getint('smtp', 'port')
-                user = config.get('smtp', 'user')
-                passwd = config.get('smtp', 'passwd')
-                security = config.get('smtp', 'security').upper()
-                use_imap_auth = config.getboolean('smtp', 'use_imap_auth')
-
-                if use_imap_auth:
-                    user = request.session['username']
-                    passwd = request.session['password']
-
-                send_mail(message, host, port, user, passwd, security)
-            except SMTPRecipientsRefused as detail:
-                error_message = ''.join(
-                    ['<p>%s' % escape(detail.recipients[Xi][1])
-                     for Xi in detail.recipients])
-                return render(request, 'mail/send_message.html',
-                              {'form': form,
-                               'server_error': error_message,
-                               'uploaded_files': uploaded_files})
-            except SMTPException as detail:
-                return render(request, 'mail/send_message.html',
-                              {'form': form,
-                               'server_error': '<p>%s' % detail,
-                               'uploaded_files': uploaded_files})
-            except Exception as detail:
-                error_message = '<p>%s' % detail
-                return render(request, 'mail/send_message.html',
-                              {'form': form,
-                               'server_error': error_message,
-                               'uploaded_files': uploaded_files})
-
-            # Store the message on the sent folder
-            imap_store(request, user_profile.sent_folder, message)
-
-            # Delete the temporary files
-            uploaded_files.delete()
-
-            return HttpResponseRedirect('/')
-        else:
-            # Return to the message composig view
-            return render(request,
-                          'mail/send_message.html',
-                          {'form': form,
-                           'uploaded_files': uploaded_files})
-
+    elif request.method == 'POST':
+        return send_message(request)
     else:
-        # Create the intial message
-        initial = {'text_format': 1,
-                   'message_text': text,
-                   'to_addr': to_addr,
-                   'cc_addr': cc_addr,
-                   'bcc_addr': bcc_addr,
-                   'subject': subject,
-                   'saved_files': attachments}
-
-        if attachments:
-            uploaded_files = UploadFiles(request.user,
-                                         old_files=attachments.split(','))
-        else:
-            uploaded_files = []
-
-        form = ComposeMailForm(initial=initial,
-                               request=request)
-        return render(request,
-                      'mail/send_message.html',
-                      {'form': form,
-                       'uploaded_files': uploaded_files})
+        raise SendError('Invalid method')
 
 
-@login_required
-def new_message(request):
+def new_message_old(request):
     if request.method == 'GET':
         to_addr = request.GET.get('to_addr', '')
         cc_addr = request.GET.get('cc_addr', '')
