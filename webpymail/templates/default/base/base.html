@@ -23,7 +23,7 @@
 <div id="main_menu" class="menu_dropdown">
   <ul>
     {% block main_menu %}{% endblock %}
-    <li><a href="{% url 'not_implemented' %}">{% trans "Options" %}</a>
+    <li><a href="{% url 'config_menu' %}">{% trans "Options" %}</a>
     <li><a href="{% url 'browse_addresses' %}">{% trans "Addresses" %}</a>
     <li><hr></li>
     <li><a href="{% url 'about' %}">{% trans "About" %}</a>

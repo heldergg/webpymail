@@ -43,6 +43,8 @@ urlpatterns = [
         url(r'^ab/', include('sabapp.urls')),
         # Authentication interface:
         url(r'^auth/', include('wpmauth.urls')),
+        # Configuration:
+        url(r'^config/', include('configapp.urls')),
         # Generic:
         url(r'^not_implemented/$', not_implemented, name='not_implemented'),
         ]
