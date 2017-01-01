@@ -1,7 +1,7 @@
 {% load loader_tags %}{% extends "base/base.html" %}
 {% load i18n %}
 
-{% block inpage_title %}{% trans "Compose Message" %}{% endblock %}
+{% block inpage_title %}{{ page_title }}{% endblock %}
 
 {% block headercontent %}
 <link href="{{ STATIC_URL }}css/send_message.css" rel="stylesheet" type="text/css"></link>
