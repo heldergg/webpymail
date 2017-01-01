@@ -64,14 +64,6 @@ MARKDOWN = 2
 delete_re = re.compile(r'^delete_(\d+)$')
 
 
-# Exceptions
-class SendError(Exception):
-    '''
-    Http errors when sending messages
-    '''
-    pass
-
-
 # Utility functions
 def imap_store(request, folder, message):
     '''
@@ -87,7 +79,6 @@ class UploadFiles:
     '''
     File uploading manager
     '''
-
     def __init__(self, user, old_files=None, new_files=None):
         self.file_list = []
         self.user = user
@@ -154,42 +145,44 @@ class UploadFiles:
 #
 
 
-def get_context_data(page_title, uploaded_files):
-    '''Build the message form context
-    '''
-    context = {}
-    context['page_title'] = page_title
-    context['uploaded_files'] = uploaded_files
-    return context
-
-
-def get_message_data(request):
-    message_data = {'text_format': 1,
-                    'message_text': request.GET.get('text', ''),
-                    'to_addr': request.GET.get('to_addr', ''),
-                    'cc_addr': request.GET.get('cc_addr', ''),
-                    'bcc_addr': request.GET.get('bcc_addr', ''),
-                    'subject': request.GET.get('subject', ''),
-                    'saved_files': request.GET.get('attachments', ''),
-                    }
+def get_message_data(request, text='', to_addr='', cc_addr='',
+                     bcc_addr='', subject='', attachments=''):
+    r = request.GET
+    message_data = {}
+    message_data['text_format'] = 1
+    message_data['message_text'] = text if text else r.get('text', '')
+    message_data['to_addr'] = to_addr if to_addr else r.get('to_addr', '')
+    message_data['cc_addr'] = cc_addr if cc_addr else r.get('cc_addr', '')
+    message_data['bcc_addr'] = bcc_addr if bcc_addr else r.get('bcc_addr', '')
+    message_data['subject'] = subject if subject else r.get('subject', '')
+    message_data['saved_files'] = (attachments
+                                   if attachments else
+                                   r.get('attachments', ''))
     return message_data
 
 
-def get_uploaded_files(request, message_data):
-    uploaded_files = []
-    attachments = message_data['saved_files']
+def create_initial_message(request, text='', to_addr='', cc_addr='',
+                           bcc_addr='', subject='', attachments='',
+                           headers={}, context={}):
+    initial = get_message_data(request, text, to_addr, cc_addr, bcc_addr,
+                               subject, attachments)
     if attachments:
         uploaded_files = UploadFiles(request.user,
                                      old_files=attachments.split(','))
-    return uploaded_files
-
+    else:
+        uploaded_files = []
+    form = ComposeMailForm(initial=initial, request=request)
+    context['form'] = form
+    context['uploaded_files'] = uploaded_files
+    return render(request, 'mail/send_message.html', context)
 
 #
 # Compose message POST handling
 #
 
+
 def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
-                 subject='', attachments='', headers={}):
+                 subject='', attachments='', headers={}, context={}):
     '''Generic send message view
     '''
     # Auxiliary data initialization
@@ -274,45 +267,63 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
             passwd = config.get('smtp', 'passwd')
             security = config.get('smtp', 'security').upper()
             use_imap_auth = config.getboolean('smtp', 'use_imap_auth')
-
             if use_imap_auth:
                 user = request.session['username']
                 passwd = request.session['password']
-
             send_mail(message, host, port, user, passwd, security)
         except SMTPRecipientsRefused as detail:
             error_message = ''.join(
                 ['<p>%s' % escape(detail.recipients[Xi][1])
                  for Xi in detail.recipients])
-            return render(request, 'mail/send_message.html',
-                          {'form': form,
-                           'server_error': error_message,
-                           'uploaded_files': uploaded_files})
+            context['form'] = form,
+            context['server_error'] = error_message,
+            context['uploaded_files'] = uploaded_files
+            return render(request, 'mail/send_message.html', context)
         except SMTPException as detail:
-            return render(request, 'mail/send_message.html',
-                          {'form': form,
-                           'server_error': '<p>%s' % detail,
-                           'uploaded_files': uploaded_files})
+            error_message = '<p>%s' % detail
+            context['form'] = form,
+            context['server_error'] = error_message,
+            context['uploaded_files'] = uploaded_files
+            return render(request, 'mail/send_message.html', context)
         except Exception as detail:
             error_message = '<p>%s' % detail
-            return render(request, 'mail/send_message.html',
-                          {'form': form,
-                           'server_error': error_message,
-                           'uploaded_files': uploaded_files})
+            context['form'] = form,
+            context['server_error'] = error_message,
+            context['uploaded_files'] = uploaded_files
+            return render(request, 'mail/send_message.html', context)
 
         # Store the message on the sent folder
         imap_store(request, user_profile.sent_folder, message)
-
         # Delete the temporary files
         uploaded_files.delete()
-
         return HttpResponseRedirect('/')
     else:
         # Return to the message composig view
-        return render(request,
-                      'mail/send_message.html',
-                      {'form': form,
-                       'uploaded_files': uploaded_files})
+        context['form'] = form
+        context['uploaded_files'] = uploaded_files
+        return render(request, 'mail/send_message.html', context)
+
+#
+# Common utilities
+#
+
+
+def get_message(request, folder, uid):
+    server = serverLogin(request)
+    folder_name = base64.urlsafe_b64decode(str(folder))
+    folder = server[folder_name]
+    return folder[int(uid)]
+
+
+def get_headers(message):
+    message_id = message.envelope['env_message_id']
+    references = message.references.copy()
+    if message_id:
+        references.append(message_id)
+    headers = {}
+    headers['References'] = ' '.join(references)
+    headers['In-Reply-To'] = message_id
+    return headers
 
 #
 # Send messages views
@@ -321,61 +332,22 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
 
 @login_required
 def new_message(request):
+    context = {'page_title': _('New Message')}
     if request.method == 'GET':
-        # Configuration
-        page_title = _('New Message')
-        uploaded_files = None
-        # Form setup
-        context = get_context_data(page_title, uploaded_files)
-        message_data = get_message_data(request)
-        uploaded_files = get_uploaded_files(request, message_data)
-        context['form'] = ComposeMailForm(initial=message_data,
-                                          request=request)
-        context['uploaded_files'] = uploaded_files
-        return render(request,
-                      'mail/send_message.html',
-                      context)
+        return create_initial_message(request, context=context)
     elif request.method == 'POST':
-        return send_message(request)
-    else:
-        raise SendError('Invalid method')
-
-
-def new_message_old(request):
-    if request.method == 'GET':
-        to_addr = request.GET.get('to_addr', '')
-        cc_addr = request.GET.get('cc_addr', '')
-        bcc_addr = request.GET.get('bcc_addr', '')
-        subject = request.GET.get('subject', '')
-    else:
-        to_addr = ''
-        cc_addr = ''
-        bcc_addr = ''
-        subject = ''
-    return send_message(request, to_addr=to_addr, cc_addr=cc_addr,
-                        bcc_addr=bcc_addr, subject=subject)
+        return send_message(request, context=context)
 
 
 @login_required
 def reply_message(request, folder, uid):
     '''Reply to a message'''
+    context = {'page_title': _('Reply to Message')}
     # Get the message
-    server = serverLogin(request)
-    folder_name = base64.urlsafe_b64decode(str(folder))
-    folder = server[folder_name]
-    message = folder[int(uid)]
-    headers = {}
-
-    # References header:
-    message_id = message.envelope['env_message_id']
-    references = message.references.copy()
-    if message_id:
-        references.append(message_id)
-    headers['References'] = ' '.join(references)
-
-    # In-Reply-To header:
-    headers['In-Reply-To'] = message_id
-
+    message = get_message(request, folder, uid)
+    # Headers
+    headers = get_headers(message)
+    # Handle the request
     if request.method == 'GET':
         # Extract the relevant headers
         to_addr = mail_addr_str(message.envelope['env_from'][0])
@@ -395,34 +367,24 @@ def reply_message(request, folder, uid):
                     text)
                  )
 
+        # Show the compose message form
+        return create_initial_message(request, text=text, to_addr=to_addr,
+                                      subject=subject, headers=headers,
+                                      context=context)
+    elif request.method == 'POST':
         # Invoque the compose message form
-        return send_message(request, text=text, to_addr=to_addr,
-                            subject=subject, headers=headers)
-    else:
-        # Invoque the compose message form
-        return send_message(request, headers=headers)
+        return send_message(request, headers=headers, context=context)
 
 
 @login_required
 def reply_all_message(request, folder, uid):
     '''Reply to a message'''
-    # Get the message we're replying to
-    server = serverLogin(request)
-    folder_name = base64.urlsafe_b64decode(str(folder))
-    folder = server[folder_name]
-    message = folder[int(uid)]
-    headers = {}
-
-    # References header:
-    message_id = message.envelope['env_message_id']
-    references = message.references.copy()
-    if message_id:
-        references.append(message_id)
-    headers['References'] = ' '.join(references)
-
-    # In-Reply-To header:
-    headers['In-Reply-To'] = message_id
-
+    context = {'page_title': _('Reply all to Message')}
+    # Get the message
+    message = get_message(request, folder, uid)
+    # Headers
+    headers = get_headers(message)
+    # Handle the request
     if request.method == 'GET':
         # Extract the relevant headers
         to_addr = mail_addr_str(message.envelope['env_from'][0])
@@ -444,34 +406,24 @@ def reply_all_message(request, folder, uid):
                     text)
                  )
 
+        # Show the compose message form
+        return create_initial_message(request, text=text, to_addr=to_addr,
+                                      cc_addr=cc_addr, subject=subject,
+                                      headers=headers, context=context)
+    elif request.method == 'POST':
         # Invoque the compose message form
-        return send_message(request, text=text, to_addr=to_addr,
-                            cc_addr=cc_addr, subject=subject)
-    else:
-        # Invoque the compose message form
-        return send_message(request, headers=headers)
+        return send_message(request, headers=headers, context=context)
 
 
 @login_required
 def forward_message(request, folder, uid):
     '''Reply to a message'''
+    context = {'page_title': _('Forward Message')}
     # Get the message
-    M = serverLogin(request)
-    folder_name = base64.urlsafe_b64decode(str(folder))
-    folder = M[folder_name]
-    message = folder[int(uid)]
-    headers = {}
-
-    # References header:
-    message_id = message.envelope['env_message_id']
-    references = message.references.copy()
-    if message_id:
-        references.append(message_id)
-    headers['References'] = ' '.join(references)
-
-    # In-Reply-To header:
-    headers['In-Reply-To'] = message_id
-
+    message = get_message(request, folder, uid)
+    # Headers
+    headers = get_headers(message)
+    # Handle the request
     if request.method == 'GET':
         # Extract the relevant headers
         subject = _('Fwd: ') + message.envelope['env_subject']
@@ -493,11 +445,13 @@ def forward_message(request, folder, uid):
             sent=False)
         attachment.save()
 
-        return send_message(request, subject=subject,
-                            attachments='%d' % attachment.id)
+        # Show the compose message form
+        return create_initial_message(request, subject=subject,
+                                      attachments='%d' % attachment.id,
+                                      headers=headers, context=context)
     else:
         # Invoque the compose message form
-        return send_message(request, headers=headers)
+        return send_message(request, headers=headers, context=context)
 
 
 @login_required
@@ -516,22 +470,12 @@ def forward_message_inline(request, folder, uid):
 
         return text
 
+    context = {'page_title': _('Forward Message Inline')}
     # Get the message
-    M = serverLogin(request)
-    folder_name = base64.urlsafe_b64decode(str(folder))
-    folder = M[folder_name]
-    message = folder[int(uid)]
-    headers = {}
-
-    # References header:
-    message_id = message.envelope['env_message_id']
-    references = message.references.copy()
-    if message_id:
-        references.append(message_id)
-    headers['References'] = ' '.join(references)
-
-    # In-Reply-To header:
-    headers['In-Reply-To'] = message_id
+    message = get_message(request, folder, uid)
+    # Headers
+    headers = get_headers(message)
+    # Handle the request
     if request.method == 'GET':
         # Extract the relevant headers
         subject = _('Fwd: ') + message.envelope['env_subject']
@@ -585,11 +529,12 @@ def forward_message_inline(request, folder, uid):
                     sent=False)
                 attachment.save()
                 attach_list.append(attachment.id)
+        attachments = ','.join(['%d' % Xi for Xi in attach_list])
 
-        return send_message(request, subject=subject, text=text,
-                            attachments=','.join(['%d' % Xi
-                                                  for Xi in attach_list])
-                            )
+        # Show the compose message form
+        return create_initial_message(request, text=text, subject=subject,
+                                      attachments=attachments,
+                                      headers=headers, context=context)
     else:
         # Invoque the compose message form
-        return send_message(request, headers=headers)
+        return send_message(request, headers=headers, context=context)
