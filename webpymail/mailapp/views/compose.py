@@ -272,23 +272,22 @@ def send_message(request, text='', to_addr='', cc_addr='', bcc_addr='',
                 passwd = request.session['password']
             send_mail(message, host, port, user, passwd, security)
         except SMTPRecipientsRefused as detail:
-            error_message = ''.join(
-                ['<p>%s' % escape(detail.recipients[Xi][1])
-                 for Xi in detail.recipients])
-            context['form'] = form,
-            context['server_error'] = error_message,
+            error_message = ''.join(['<p>%s' % escape(detail.recipients[Xi][1])
+                                     for Xi in detail.recipients])
+            context['form'] = form
+            context['server_error'] = error_message
             context['uploaded_files'] = uploaded_files
             return render(request, 'mail/send_message.html', context)
         except SMTPException as detail:
             error_message = '<p>%s' % detail
-            context['form'] = form,
-            context['server_error'] = error_message,
+            context['form'] = form
+            context['server_error'] = error_message
             context['uploaded_files'] = uploaded_files
             return render(request, 'mail/send_message.html', context)
         except Exception as detail:
             error_message = '<p>%s' % detail
-            context['form'] = form,
-            context['server_error'] = error_message,
+            context['form'] = form
+            context['server_error'] = error_message
             context['uploaded_files'] = uploaded_files
             return render(request, 'mail/send_message.html', context)
 
