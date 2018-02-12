@@ -440,6 +440,9 @@ class FetchParser(dict):
     def default_data_item(self, data_item):
         return data_item
 
+    def UID_data_item(self, uid):
+        return int(uid)
+
     def BODY_data_item(self, body):
         return load_structure(body)
 

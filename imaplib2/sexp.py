@@ -82,9 +82,7 @@ def scan_sexp(text):
             simple = simple_re.match(text[pos:])
             if simple:
                 tmp = simple.groups()[0]
-                if tmp.isdigit():
-                    tmp = int(tmp)
-                elif tmp == 'NIL':
+                if tmp == 'NIL':
                     tmp = None
                 cur_result.append(tmp)
                 pos += simple.end() - 1
