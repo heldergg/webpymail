@@ -27,6 +27,8 @@ import sys
 import getopt
 import getpass
 
+from imaplib2 import D_SERVER, D_CLIENT
+import imaplib2
 from hlimap import ImapServer
 
 #
@@ -73,18 +75,22 @@ def usage():
         --port                  (default: 143) port to connect to, if SSL
                                 security is used the default changes to 993
 
+        -v
+        --verbose               (default: False) show imap conversation
+
         -h --help               This help screen\n
     Notes:
         The mailbox patern is a regular expression. To match all the folders
         an empty string might be used.
     ''' % {'script_name': sys.argv[0]})
 
+
 if __name__ == '__main__':
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'ho:u:s:p:',
+        opts, args = getopt.getopt(sys.argv[1:], 'hvo:u:s:p:',
                                    ['list-mailboxes=', 'mark-read=',
                                     'host=', 'user=', 'security=', 'port=',
-                                    'help'])
+                                    'help', 'verbose'])
     except getopt.GetoptError as err:
         print(str(err))
         print()
@@ -116,6 +122,8 @@ if __name__ == '__main__':
                 sys.exit(2)
             if security == 'SSL' and port == 143:
                 port = 993
+        elif o in ('-v', '--verbose'):
+            imaplib2.imapll.Debug = D_SERVER | D_CLIENT
 
     # Mandatory args
     for o, a in opts:

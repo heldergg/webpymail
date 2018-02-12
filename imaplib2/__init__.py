@@ -40,3 +40,7 @@ lists;
 * infolog - example infolog class;
 * utils - severall utility functions and classes;
 '''
+
+D_SERVER = 1        # Debug responses from the server
+D_CLIENT = 2        # Debug data sent by the client
+D_RESPONSE = 4      # Debug obtained response
