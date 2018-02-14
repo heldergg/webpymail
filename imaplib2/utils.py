@@ -234,6 +234,15 @@ def internaldate2datetime(resp):
     return datetime.datetime.fromtimestamp(utc - zone)
 
 
+def list_to_int(msg_list):
+    '''Converts a message list, nested or not, to int.
+    '''
+    return [list_to_int(msg_id)
+                if isinstance(msg_id, list) else
+                    int(msg_id)
+                        for msg_id in msg_list]
+
+
 def shrink_fetch_list(msg_list):
     '''Shrinks the message list to use on the fetch command, consecutive msg_list
     numbers will be converted to first:last.

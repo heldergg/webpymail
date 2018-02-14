@@ -40,7 +40,7 @@ import socket
 from .imapll import IMAP4, IMAP4_SSL
 from .infolog import InfoLog
 from .imapcommands import COMMANDS, STATUS
-from .utils import makeTagged, unquote, shrink_fetch_list
+from .utils import makeTagged, unquote, shrink_fetch_list, list_to_int
 from .parsefetch import FetchParser
 from . import parselist
 from .sexp import scan_sexp
@@ -437,7 +437,7 @@ class IMAP4P:
 
     def THREAD_response(self, code, args):
         response = scan_sexp(args)
-        self.sstatus['thread_response'] = response
+        self.sstatus['thread_response'] = list_to_int(response)
 
     def STATUS_response(self, code, args):
         response = scan_sexp(args)
